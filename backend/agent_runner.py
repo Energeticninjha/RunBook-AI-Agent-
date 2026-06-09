@@ -4,13 +4,19 @@ import threading
 import requests
 import json
 import os
-from openai import OpenAI
+try:
+    from openai import OpenAI
+    HAS_OPENAI = True
+except ImportError:
+    OpenAI = None
+    HAS_OPENAI = False
+
 from .mcp_tool import ShellExecutorMCPTool
 from .runbook_parser import RunbookParser
 from . import database as db
 
 # Configuration
-DISCORD_WEBHOOK = "YOUR_WEBHOOK_URL_HERE" # User should replace this
+DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1513869705314570320/ZLSV5Qi4G2K78gux_KLPUYIFtl2w6F5R8ztTqGlXBjCkH3wUxNNl5z85TKjLO-yQlJJV" # User should replace this
 OLLAMA_URL = "http://localhost:11434/v1"
 
 class OpsAgentRunner:
@@ -24,10 +30,13 @@ class OpsAgentRunner:
         
         # Local Ollama Llama3 client (OpenAI compatible)
         try:
-            self.ollama = OpenAI(
-                base_url=OLLAMA_URL,
-                api_key="ollama"
-            )
+            if HAS_OPENAI and OpenAI is not None:
+                self.ollama = OpenAI(
+                    base_url=OLLAMA_URL,
+                    api_key="ollama"
+                )
+            else:
+                self.ollama = None
         except Exception:
             self.ollama = None
 
@@ -38,13 +47,23 @@ class OpsAgentRunner:
             self.activity_feed.pop(0)
 
     def send_discord(self, message):
-        if not DISCORD_WEBHOOK or "YOUR_WEBHOOK_URL" in DISCORD_WEBHOOK:
-            return
         try:
+            # Strip emojis for Windows console logs to prevent UnicodeEncodeError
+            safe_log_msg = message.encode('ascii', 'ignore').decode().replace('\n', ' ')
+            print(f"[DISCORD DEBUG] send_discord: {safe_log_msg[:100]}...")
+            
+            if not DISCORD_WEBHOOK or "YOUR_WEBHOOK_URL" in DISCORD_WEBHOOK:
+                print(f"[DISCORD DEBUG] Webhook bypass (not configured).")
+                return
+                
             payload = {"content": message}
-            requests.post(DISCORD_WEBHOOK, json=payload, timeout=5)
+            res = requests.post(DISCORD_WEBHOOK, json=payload, timeout=5)
+            print(f"[DISCORD DEBUG] Webhook response status: {res.status_code}")
         except Exception as e:
-            print(f"Discord error: {e}")
+            try:
+                print(f"[DISCORD DEBUG] Discord error: {type(e).__name__}")
+            except Exception:
+                pass
 
     def classify_step(self, step_number, step_type, step_description, command, failure_context):
         """
