@@ -61,4 +61,4 @@ runbook-agent/
 5. **Minute 5**: The agent resolves the issue. The status turns green. Show the History table and Execution stats.
 
 ---
-*Built with ❤️ by Team AI Ops*
+
