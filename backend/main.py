@@ -6,6 +6,9 @@ from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from .agent_runner import OpsAgentRunner
 from . import database as db

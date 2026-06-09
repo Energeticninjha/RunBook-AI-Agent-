@@ -10,8 +10,8 @@ from .runbook_parser import RunbookParser
 from . import database as db
 
 # Configuration
-DISCORD_WEBHOOK = "YOUR_WEBHOOK_URL_HERE" # User should replace this
-OLLAMA_URL = "http://localhost:11434/v1"
+DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_URL", "YOUR_WEBHOOK_URL_HERE")
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/v1")
 
 class OpsAgentRunner:
     def __init__(self, activity_feed, server_status, confirm_event):
