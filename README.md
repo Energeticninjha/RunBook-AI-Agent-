@@ -1,109 +1,78 @@
-# RUNBOOK AGENT
-```
-██████╗ ██╗   ██╗███╗   ██╗██████╗  ██████╗  ██████╗ ██╗  ██╗     █████╗  ██████╗ ███████╗███╗   ██╗████████╗
-██╔══██╗██║   ██║████╗  ██║██╔══██╗██╔═══██╗██╔═══██╗██║ ██╔╝    ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝
-██████╔╝██║   ██║██╔██╗ ██║██████╔╝██║   ██║██║   ██║█████╔╝     ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   
-██╔══██╗██║   ██║██║╚██╗██║██╔══██╗██║   ██║██║   ██║██╔═██╗     ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   
-██║  ██║╚██████╔╝██║ ╚████║██████╔╝╚██████╔╝╚██████╔╝██║  ██╗    ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   
-╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   
-```
+<div align="center">
+  <br />
+  <img src="https://img.icons8.com/isometric/512/robot.png" width="120" />
+  <h1>🚀 RUNBOOK AGENT</h1>
+  <h3>Autonomous Incident Resolution Engine</h3>
+  <p><i>The Bridge Between AI Reasoning and Infrastructure Recovery</i></p>
 
-Autonomous · Incident-Aware · Safety-First
-RUNBOOK AGENT is an enterprise-grade autonomous IT operations agent that processes infrastructure failures through a three-layer intelligence stack — resolving downtime with AI precision.
-
-## 🏛️ Three-Layer Autonomy Stack
-```
-┌──────────────────────────────────────┐
-│       INFRASTRUCTURE MONITOR         │
-│  (Nginx / CPU / DB / Disk Metrics)   │
-└──────────────────┬───────────────────┘
-                   │
-         🚀 INCIDENT TRIGGERED 
-                   │
-╔══════════════════▼════════════════════╗
-║    LAYER 1 · INTELLIGENT PARSER      ║
-║                                      ║
-║  Markdown Runbooks ──► JSON steps    ║
-║  SAFE vs RISKY Tagging               ║
-╚══════════════╤═══════════════════════╝
-               │
-╔══════════════▼═══════════════════════╝
-║    LAYER 2 · AI CLASSIFIER (LLM)     ║
-║                                      ║
-║  Llama 3 Reasoning Engine            ║
-║  Auto-Execute / Confirm Logic        ║
-╚══════════════╤═══════════════════════╝
-               │
-╔══════════════▼═══════════════════════╝
-║    LAYER 3 · MCP EXECUTION ENGINE    ║
-║                                      ║
-║  ShellExecutor (Simulated Linux)     ║
-║  Security Allowlist Verification     ║
-╚══════════════════════════════════════╝
-```
-
-## 💬 Full Incident Walkthrough
-```
-[09:00] MONITOR → 🔴 [ALARM] Nginx Service Down (Port 80 Refused)
-[09:00] AGENT   → 🔍 IDENTIFIED: nginx_down.md selected.
-[09:01] AGENT   → 🧠 CLASSIFYING: Step 1 (Check status) -> [SAFE: Read-only]
-[09:01] AGENT   → ⚡ EXECUTING: systemctl status nginx...
-[09:02] AGENT   → 🧠 CLASSIFYING: Step 4 (Restart Nginx) -> [RISKY: Service State Change]
-[09:02] AGENT   → ⚠️ AWAITING CONFIRMATION: Dashboard alert triggered.
-[09:02] USER    → ✅ [CONFIRMED via Dashboard]
-[09:02] AGENT   → ⚡ EXECUTING: systemctl restart nginx...
-[09:03] AGENT   → 🟢 RESOLVED: Nginx healthy. Recovery notification sent to Discord.
-```
-
-## 📁 Project Structure
-```
-runbook-agent/
-├── backend/
-│   ├── main.py              Application bootstrap · FastAPI Routing
-│   ├── agent_runner.py      Autonomous Control Loop · Llama 3 Client
-│   ├── mcp_tool.py          MCP ShellExecutor · Safety Allowlist
-│   ├── runbook_parser.py    Markdown Intelligence · Step Extraction
-│   └── database.py          SQLite Persistence · Incident History
-│
-├── frontend/
-│   └── index.html           Real-time Dashboard · Terminal Feed · Health UI
-│
-├── runbooks/                Static Operational Intelligence
-│   ├── nginx_down.md        Web Service Recovery
-│   ├── high_cpu.md          Performance Optimization
-│   ├── database_failure.md  Connection Recovery
-│   └── disk_full.md         Storage Cleanup
-│
-├── .env.example             Environment Variable Template
-├── requirements.txt         FastAPI · OpenAI · Requests · PyYAML
-└── README.md                Enterprise Documentation
-```
-
-## 🚀 Quick Start
-1 · Clone & Configure
-```powershell
-git clone <repo-url> && cd opsbot-ai
-cp .env.example .env # Edit .env with your DISCORD_WEBHOOK_URL
-```
-
-2 · Setup AI
-Install [Ollama](https://ollama.com/) and run:
-```powershell
-ollama pull llama3
-```
-
-3 · Run Locally
-```powershell
-pip install -r requirements.txt
-python -m uvicorn backend.main:app --reload --port 8000
-```
-
-## ⚙️ Configuration
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OLLAMA_URL` | `http://localhost:11434/v1` | Local LLM Server |
-| `DISCORD_WEBHOOK_URL` | `None` | Notification endpoint |
-| `PORT` | `8000` | Dashboard listener |
+  <p>
+    <img src="https://img.shields.io/badge/Status-Active-brightgreen" />
+    <img src="https://img.shields.io/badge/AI-Llama_3-blue" />
+    <img src="https://img.shields.io/badge/Backend-FastAPI-009688" />
+    <img src="https://img.shields.io/badge/Automation-MCP-orange" />
+  </p>
+  <br />
+</div>
 
 ---
-*Built with ❤️ by Team AI Ops*
+
+### 🛡️ What is RUNBOOK AGENT?
+An enterprise-grade autonomous IT operations agent that detects, classifies, and resolves infrastructure failures in real-time. By combining the **Model Context Protocol (MCP)** with **Llama 3 reasoning**, it executes operational runbooks with safety-first precision.
+
+---
+
+## 🏛️ Intelligence Architecture
+```mermaid
+graph TD
+    A[Infrastructure Monitor] -->|Critical Alert| B(Incident Detected)
+    B --> C{Layer 1: Parser}
+    C -->|Extract Steps| D[Layer 2: AI Classifier]
+    D -->|Safe Check| E{AI Analysis}
+    E -->|Safe| F[Layer 3: Execution Engine]
+    E -->|Risky| G[Human-in-the-Loop]
+    G -->|Confirmed| F
+    F -->|Recovery| H[Discord Notification]
+```
+
+---
+
+## 🏛️ Three-Layer Autonomy Stack
+1.  **Layer 1 · Intelligent Parser**: Transforms Markdown instructions into structured executable JSON pipelines.
+2.  **Layer 2 · AI Classifier (LLM)**: Uses Llama 3 to analyze the "Blast Radius" of every command to distinguish between `SAFE` (Reads) and `RISKY` (Restarts/Kills).
+3.  **Layer 3 · MCP Execution Engine**: A secure shell executor with a strict security allowlist to prevent unauthorized system modification.
+
+---
+
+## 💬 Incident Resolution Flow
+> **[09:00] MONITOR** → 🔴 High CPU Usage Detected (>95%)
+>
+> **[09:01] AGENT**   → 🔍 Triggered `high_cpu.md`
+>
+> **[09:01] AGENT**   → 🧠 AI Logic: "Finding top processes is SAFE. Killing PID 1234 is RISKY."
+>
+> **[09:02] AGENT**   → ⚠️ Paused for human confirmation.
+>
+> **[09:02] USER**    → ✅ Confirmed.
+>
+> **[09:03] AGENT**   → 🟢 Resolved. CPU load normalized to 15%.
+
+---
+
+## 📁 Project Structure
+*   **`backend/`**: FastAPI logic, Agent Control Loop, and MCP Tooling.
+*   **`frontend/`**: Real-time Glassmorphism Dashboard.
+*   **`runbooks/`**: Standard markdown operational intelligence.
+*   **`.env`**: Centralized configuration management.
+
+---
+
+## 🚀 Quick Start
+1.  **Clone**: `git clone <repo-url> && cd opsbot-ai`
+2.  **Config**: `cp .env.example .env` (Add your Discord Webhook)
+3.  **AI**: `ollama pull llama3`
+4.  **Run**: `python -m uvicorn backend.main:app --reload --port 8000`
+
+---
+<div align="center">
+  Built with ❤️ by Team AI Ops
+</div>
