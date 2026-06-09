@@ -3,547 +3,1370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RUNBOOK AGENT — Autonomous Runbook Execution Agent</title>
+    <title>PragathiSellamuthu/RunBook-AI-Agent- — Autonomous Runbook Execution Agent</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #05070a;
-            --card-bg: #0d1117;
-            --navbar-bg: rgba(10, 14, 26, 0.95);
-            --primary: #3b82f6;
-            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #10b981 100%);
-            --secondary: #8b5cf6;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #1e293b;
-            --terminal-bg: #080d1a;
+            --bg-canvas: #0d1117;
+            --bg-surface: #161b22;
+            --bg-surface-hover: #21262d;
+            --border-default: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-orange: #f0883e;
+            --accent-purple: #bc8cff;
+            --accent-yellow: #d29922;
+            --active-tab-border: #f78166;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Inter', sans-serif;
+            --terminal-bg: #040406;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            font-family: var(--font-sans);
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            line-height: 1.6;
-            overflow-x: hidden;
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
         }
 
         /* --- Animations --- */
         @keyframes pulse-green {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(63, 185, 80, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
         }
 
         @keyframes pulse-red {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(248, 81, 73, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(248, 81, 73, 0); }
+        }
+
+        @keyframes pulse-orange {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(240, 136, 62, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(240, 136, 62, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(240, 136, 62, 0); }
         }
 
         @keyframes shake {
             0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(4px); }
+            75% { transform: translateX(-4px); }
             100% { transform: translateX(0); }
         }
 
         @keyframes slideInLeft {
-            from { transform: translateX(-20px); opacity: 0; }
+            from { transform: translateX(-15px); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
 
-        @keyframes fadeInUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes glow-pulse {
-            0% { border-color: var(--border); box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
-            50% { border-color: var(--primary); box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
-            100% { border-color: var(--border); box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
-        }
-
-        /* --- Navbar --- */
-        nav {
-            position: sticky;
-            top: 0;
-            height: 64px;
-            background: var(--navbar-bg);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
-            z-index: 1000;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .logo i {
-            -webkit-text-fill-color: var(--primary);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 32px;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: var(--text-main);
-        }
-
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        /* --- Hero Section --- */
-        .hero {
-            padding: 80px 40px;
+        /* --- Subtle Hero Title Card --- */
+        .hero-title-card {
             text-align: center;
-            position: relative;
-            background-image: radial-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-
-        .hero::before, .hero::after {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            filter: blur(120px);
-            z-index: -1;
-            opacity: 0.15;
-        }
-
-        .hero::before { top: 10%; left: 10%; background: var(--primary); }
-        .hero::after { bottom: 10%; right: 10%; background: var(--secondary); }
-
-        .hero-badge {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 24px;
-        }
-
-        .hero h1 {
-            font-size: 4rem;
-            font-weight: 800;
-            margin-bottom: 16px;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.3));
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            color: var(--text-muted);
-            max-width: 700px;
-            margin: 0 auto 32px;
-        }
-
-        .hero-btns {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-        }
-
-        .btn {
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background-color: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: rgba(59, 130, 246, 0.1);
-        }
-
-        /* --- Stats Row --- */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 24px;
-            padding: 0 40px 60px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 24px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-        }
-
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-
-        .stat-info h3 {
-            font-size: 1.75rem;
-            font-family: 'JetBrains Mono', monospace;
-            margin-bottom: 4px;
-        }
-
-        .stat-info p {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        .stat-trend {
-            font-size: 0.75rem;
-            margin-top: 4px;
-        }
-
-        /* --- Infrastructure Status --- */
-        .page-section {
-            padding: 0 40px 80px;
-        }
-
-        .section-header {
-            margin-bottom: 32px;
-        }
-
-        .section-header h2 {
-            font-size: 2rem;
-            margin-bottom: 8px;
-        }
-
-        .section-header p {
-            color: var(--text-muted);
-        }
-
-        .infra-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 24px;
-        }
-
-        .server-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 24px;
-            border-radius: 12px;
-            transition: all 0.3s;
+            padding: 32px 24px 24px;
             position: relative;
             overflow: hidden;
         }
 
+        .hero-title-card::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(88,166,255,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #58a6ff 0%, #bc8cff 40%, #f0883e 70%, #3fb950 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 6s ease infinite;
+            margin-bottom: 6px;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hero-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .hero-dot {
+            width: 6px; height: 6px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse-green 2s infinite;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            background: rgba(88,166,255,0.08);
+            border: 1px solid rgba(88,166,255,0.2);
+            color: var(--accent-blue);
+            padding: 2px 10px;
+            border-radius: 2em;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-left: 4px;
+        }
+
+        /* --- GitHub Top Header --- */
+        .github-header {
+            background-color: #010409;
+            border-bottom: 1px solid var(--border-default);
+            padding: 12px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .github-logo {
+            font-size: 24px;
+            color: #ffffff;
+            transition: transform 0.2s;
+        }
+        .github-logo:hover {
+            transform: scale(1.08);
+        }
+
+        .header-search {
+            background-color: #0d1117;
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            padding: 4px 12px;
+            width: 280px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .avatar-img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--accent-purple);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        /* --- Repository Subheader --- */
+        .repo-subheader {
+            background-color: #0d1117;
+            border-bottom: 1px solid var(--border-default);
+            padding: 16px 32px 0 32px;
+        }
+
+        .repo-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .repo-path {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .repo-owner {
+            color: var(--accent-blue);
+        }
+
+        .repo-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .repo-badge {
+            font-size: 12px;
+            border: 1px solid var(--border-default);
+            padding: 2px 8px;
+            border-radius: 2em;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .repo-actions-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .repo-action-btn {
+            background-color: #21262d;
+            border: 1px solid var(--border-default);
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .repo-action-btn:hover {
+            background-color: #30363d;
+            border-color: #8b949e;
+        }
+
+        .repo-action-btn span.count {
+            background-color: #30363d;
+            border-radius: 2em;
+            padding: 1px 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* --- Navigation Tabs --- */
+        .repo-nav-tabs {
+            display: flex;
+            list-style: none;
+            gap: 8px;
+            margin-bottom: -1px;
+        }
+
+        .repo-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            color: var(--text-primary);
+            border: 1px solid transparent;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .repo-tab:hover {
+            color: var(--text-primary);
+            background-color: rgba(177, 186, 196, 0.12);
+        }
+
+        .repo-tab.active {
+            font-weight: 600;
+            border-bottom: 2px solid var(--active-tab-border);
+        }
+
+        .repo-tab i {
+            color: var(--text-secondary);
+        }
+
+        .repo-tab.active i {
+            color: var(--text-primary);
+        }
+
+        .tab-badge {
+            background-color: #30363d;
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 2em;
+            color: var(--text-primary);
+        }
+
+        /* --- Main Layout Wrapper --- */
+        .container {
+            max-width: 1280px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* --- Code Tab Layout --- */
+        .code-grid {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 992px) {
+            .code-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- GitHub File Explorer --- */
+        .file-box {
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            background-color: var(--bg-surface);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .file-box-header {
+            background-color: #1f242c;
+            border-bottom: 1px solid var(--border-default);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .commit-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .commit-author {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .commit-msg {
+            color: var(--text-secondary);
+        }
+
+        .commit-meta {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .file-list {
+            list-style: none;
+        }
+
+        .file-item {
+            display: grid;
+            grid-template-columns: 1.5fr 2fr 1fr;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-default);
+            font-size: 13px;
+            align-items: center;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-item:hover {
+            background-color: var(--bg-surface-hover);
+        }
+
+        .file-name-col {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+
+        .file-name-col i {
+            width: 16px;
+            text-align: center;
+        }
+
+        .file-name-col i.fa-folder {
+            color: var(--accent-blue);
+        }
+
+        .file-name-col i.fa-file-code,
+        .file-name-col i.fa-file-lines {
+            color: var(--text-secondary);
+        }
+
+        .file-commit-col {
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-age-col {
+            color: var(--text-secondary);
+            text-align: right;
+            font-size: 12px;
+        }
+
+        /* --- README Panel --- */
+        .readme-box {
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            background-color: var(--bg-surface);
+            overflow: hidden;
+        }
+
+        .readme-header {
+            background-color: #1f242c;
+            border-bottom: 1px solid var(--border-default);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .readme-body {
+            padding: 32px;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        .readme-body h1 {
+            font-size: 28px;
+            border-bottom: 1px solid var(--border-default);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .readme-body h2 {
+            font-size: 20px;
+            border-bottom: 1px solid var(--border-default);
+            padding-bottom: 6px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .readme-body p {
+            margin-bottom: 16px;
+            color: #c9d1d9;
+            line-height: 1.6;
+        }
+
+        .readme-body ul {
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .readme-body li {
+            margin-bottom: 6px;
+        }
+
+        .readme-body code {
+            font-family: var(--font-mono);
+            background-color: rgba(110, 118, 129, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 85%;
+        }
+
+        /* --- Right Sidebar Layout --- */
+        .sidebar-section {
+            border-bottom: 1px solid var(--border-default);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .sidebar-heading {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .sidebar-text {
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        /* --- Interactive Tech Stack Cards --- */
+        .tech-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .tech-btn {
+            background: linear-gradient(145deg, var(--bg-surface) 0%, #1a1f2e 100%);
+            border: 1px solid var(--border-default);
+            color: var(--text-primary);
+            padding: 14px 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+            transition: left 0.5s;
+        }
+
+        .tech-btn:hover::before {
+            left: 100%;
+        }
+
+        .tech-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .tech-btn.active {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 16px rgba(88, 166, 255, 0.2), inset 0 0 20px rgba(88, 166, 255, 0.05);
+        }
+
+        .tech-btn i {
+            font-size: 22px;
+            transition: transform 0.3s;
+        }
+
+        .tech-btn:hover i {
+            transform: scale(1.2) rotate(-5deg);
+        }
+
+        .tech-btn-title {
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+        }
+
+        .tech-btn-subtitle {
+            font-size: 10px;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        /* --- Tech Stack Full Modal Overlay --- */
+        .tech-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(1, 4, 9, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10002;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .tech-modal-overlay.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .tech-modal-card {
+            background: linear-gradient(160deg, #0d1117 0%, #161b22 40%, #1a1f2e 100%);
+            border: 1px solid var(--border-default);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 580px;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            transform: scale(0.85) translateY(30px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .tech-modal-overlay.visible .tech-modal-card {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .tech-modal-glow {
+            position: absolute;
+            top: -80px; left: 50%;
+            transform: translateX(-50%);
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.25;
+            pointer-events: none;
+            transition: background 0.4s;
+        }
+
+        .tech-modal-particles {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px; height: 3px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatUp 3s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 0.6; }
+            100% { transform: translateY(-120px) scale(0); opacity: 0; }
+        }
+
+        .tech-modal-header {
+            padding: 36px 32px 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tech-modal-icon {
+            width: 64px; height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 28px;
+            transition: all 0.4s;
+            position: relative;
+        }
+
+        .tech-modal-icon::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 20px;
+            border: 2px solid transparent;
+            animation: iconBorderSpin 3s linear infinite;
+        }
+
+        @keyframes iconBorderSpin {
+            0% { border-color: transparent; }
+            25% { border-top-color: var(--accent-blue); }
+            50% { border-right-color: var(--accent-blue); border-top-color: transparent; }
+            75% { border-bottom-color: var(--accent-blue); border-right-color: transparent; }
+            100% { border-color: transparent; }
+        }
+
+        .tech-modal-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #ffffff;
+        }
+
+        .tech-modal-role {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-blue);
+        }
+
+        .tech-modal-body {
+            padding: 0 32px 28px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tech-modal-desc {
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+
+        .tech-modal-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .tech-modal-flow {
+            background: linear-gradient(135deg, #05070a 0%, #0b0f1a 100%);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .flow-step {
+            background: rgba(88, 166, 255, 0.08);
+            border: 1px solid rgba(88, 166, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: var(--accent-blue);
+            font-size: 11px;
+            opacity: 0;
+            transform: translateX(-8px);
+            animation: flowStepIn 0.3s forwards;
+        }
+
+        .flow-arrow {
+            color: var(--text-secondary);
+            font-size: 11px;
+            opacity: 0;
+            animation: flowStepIn 0.3s forwards;
+        }
+
+        @keyframes flowStepIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .tech-modal-features {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .tech-feature-tag {
+            background: rgba(63, 185, 80, 0.08);
+            border: 1px solid rgba(63, 185, 80, 0.2);
+            color: var(--accent-green);
+            padding: 4px 10px;
+            border-radius: 2em;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .tech-modal-close {
+            position: absolute;
+            top: 16px; right: 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            width: 32px; height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .tech-modal-close:hover {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        /* --- Actions Tab (Workflow executions & controls) --- */
+        .actions-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 2fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 992px) {
+            .actions-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .workflow-box {
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            background-color: var(--bg-surface);
+            padding: 16px;
+        }
+
+        .workflow-title-sec {
+            border-bottom: 1px solid var(--border-default);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .workflow-title-sec h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .workflow-title-sec p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .workflow-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .workflow-run-item {
+            border: 1px solid var(--border-default);
+            background-color: var(--bg-canvas);
+            border-radius: 6px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.25s;
+        }
+
+        .workflow-run-item:hover {
+            border-color: var(--text-secondary);
+        }
+
+        .workflow-run-meta h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .workflow-run-meta p {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .workflow-trigger-btn {
+            background-color: #238636;
+            color: #ffffff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .workflow-trigger-btn:hover {
+            background-color: #2ea043;
+        }
+
+        .workflow-trigger-btn:disabled {
+            background-color: #21262d;
+            border-color: var(--border-default);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        /* --- Live Terminal Log Feed --- */
+        .terminal-box {
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            background-color: var(--bg-surface);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 550px;
+        }
+
+        .terminal-header {
+            background-color: #1f242c;
+            border-bottom: 1px solid var(--border-default);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-status-lbl {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .terminal-body {
+            flex: 1;
+            background-color: var(--terminal-bg);
+            padding: 20px;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: #e6edf3;
+            scroll-behavior: smooth;
+        }
+
+        .log-line {
+            margin-bottom: 6px;
+            line-height: 1.5;
+            animation: slideInLeft 0.2s ease-out;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            padding-bottom: 2px;
+        }
+
+        .log-ts {
+            color: #6e7681;
+            margin-right: 8px;
+        }
+
+        .log-success { color: var(--accent-green); font-weight: 600; }
+        .log-failure { color: var(--accent-red); font-weight: 600; }
+        .log-info { color: var(--accent-blue); }
+        .log-warning { color: var(--accent-orange); font-weight: 600; }
+
+        /* --- GitHub Actions Approval Gate --- */
+        .approval-gate-panel {
+            background-color: rgba(210, 153, 34, 0.08);
+            border-top: 1px solid var(--accent-yellow);
+            padding: 16px 20px;
+            display: none;
+        }
+
+        .approval-gate-panel.active {
+            display: block;
+        }
+
+        .approval-gate-header {
+            font-weight: 600;
+            color: var(--accent-yellow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .approval-gate-msg {
+            font-size: 12px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            white-space: pre-line;
+        }
+
+        .approval-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-approve {
+            background-color: var(--accent-green);
+            color: #fff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-approve:hover {
+            background-color: #2ea043;
+        }
+
+        .btn-skip {
+            background-color: #21262d;
+            border: 1px solid var(--border-default);
+            color: var(--accent-red);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-skip:hover {
+            background-color: #30363d;
+            border-color: #8b949e;
+        }
+
+        /* --- Infrastructure Status Cards --- */
+        .infra-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .server-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            padding: 16px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
         .server-card.down {
-            border-color: var(--danger);
+            border-color: var(--accent-red);
             animation: shake 0.5s;
         }
 
         .server-card.down .server-status-dot {
-            background: var(--danger);
-            animation: pulse-red 2s infinite;
+            background-color: var(--accent-red);
+            animation: pulse-red 1.5s infinite;
         }
 
         .server-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .server-id {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-weight: 700;
+            gap: 8px;
+            font-weight: 600;
         }
 
         .server-id i {
-            color: var(--primary);
-            font-size: 1.2rem;
+            color: var(--accent-blue);
         }
 
         .server-status-badge {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
+            font-size: 11px;
+            font-weight: 600;
         }
 
         .server-status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--success);
+            background-color: var(--accent-green);
         }
 
         .server-metric {
-            margin-bottom: 16px;
+            margin-bottom: 8px;
         }
 
         .metric-label {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-            color: var(--text-muted);
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
         }
 
         .progress-bg {
             height: 6px;
-            background: var(--bg);
+            background-color: var(--bg-canvas);
             border-radius: 3px;
             overflow: hidden;
         }
 
         .progress-bar {
             height: 100%;
-            background: var(--primary);
+            background-color: var(--accent-blue);
             width: 0%;
-            transition: width 1s;
+            transition: width 0.8s;
         }
 
-        /* --- Demo Controls & Feed --- */
-        .action-container {
+        /* --- Operational Runbooks Cards --- */
+        .runbooks-grid {
             display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 32px;
-            padding: 0 40px 80px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
         }
 
-        .trigger-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .trigger-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 20px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            transition: all 0.3s;
-        }
-
-        .trigger-info { flex: 1; }
-        .trigger-info h4 { margin-bottom: 4px; }
-        .trigger-info p { font-size: 0.85rem; color: var(--text-muted); }
-
-        .btn-trigger {
-            background: transparent;
-            color: var(--danger);
-            border: 1px solid var(--danger);
-            padding: 8px 16px;
+        .runbook-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-default);
             border-radius: 6px;
-            font-weight: 700;
+            padding: 20px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.25s ease;
         }
 
-        .btn-trigger:hover {
-            background: var(--danger);
-            color: white;
+        .runbook-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            background-color: var(--bg-surface-hover);
         }
 
-        .btn-trigger:disabled {
-            border-color: var(--warning);
-            color: var(--warning);
-            cursor: not-allowed;
-            opacity: 0.7;
+        .runbook-card i {
+            margin-bottom: 12px;
         }
 
-        /* --- Agent Feed --- */
-        .feed-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            height: 500px;
-            overflow: hidden;
+        .runbook-card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 6px;
         }
 
-        .feed-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
+        .runbook-card p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* --- Runbook Modal --- */
+        .runbook-content-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(1, 4, 9, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+        }
+
+        .modal-body {
+            background-color: var(--bg-surface);
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            border-radius: 6px;
+            padding: 24px;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid var(--border-default);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .close-modal:hover {
+            color: var(--text-primary);
+        }
+
+        /* --- History Table --- */
+        .history-section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 16px;
         }
 
-        .feed-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
+        .history-table-container {
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            background-color: var(--bg-surface);
+            overflow: hidden;
         }
 
-        .feed-body {
-            flex: 1;
-            background: var(--terminal-bg);
-            padding: 20px;
-            overflow-y: auto;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            scroll-behavior: smooth;
-        }
-
-        .feed-entry {
-            margin-bottom: 8px;
-            animation: slideInLeft 0.3s ease-out;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding-bottom: 4px;
-        }
-
-        .ts { color: #565f89; margin-right: 8px; }
-        .success-text { color: var(--success); font-weight: bold; }
-        .failure-text { color: var(--danger); font-weight: bold; }
-        .info-text { color: #bb9af7; }
-        .wait-text { color: var(--warning); font-weight: bold; animation: pulse 1s infinite; }
-
-        .confirm-panel {
-            padding: 16px 20px;
-            background: rgba(245, 158, 11, 0.1);
-            border-top: 1px solid var(--warning);
-            display: none;
-        }
-
-        .confirm-panel.active { display: block; }
-
-        .confirm-btns {
-            display: flex;
-            gap: 12px;
-            margin-top: 12px;
-        }
-
-        /* --- Stats/Tech/History --- */
         .history-table {
             width: 100%;
             border-collapse: collapse;
-            background: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            margin-top: 20px;
+            font-size: 13px;
         }
 
         .history-table th, .history-table td {
-            padding: 16px;
+            padding: 12px 16px;
             text-align: left;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border-default);
+        }
+
+        .history-table tr:last-child td {
+            border-bottom: none;
         }
 
         .history-table th {
-            background: rgba(255, 255, 255, 0.02);
-            color: var(--text-muted);
+            background-color: #1f242c;
+            color: var(--text-secondary);
             font-weight: 600;
-            font-size: 0.85rem;
+        }
+
+        .history-table tbody tr:hover {
+            background-color: var(--bg-surface-hover);
         }
 
         .badge {
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 2em;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .badge-running { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
-        .badge-fail { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .badge-success { background-color: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+        .badge-running { background-color: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+        .badge-fail { background-color: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
 
-        /* --- Toasts --- */
+        /* --- Stats Row Cards --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            padding: 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.25s;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .stat-info h3 {
+            font-size: 20px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        .stat-info p {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .stat-trend {
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        /* --- Footer & Banners --- */
+        footer {
+            padding: 40px 24px;
+            border-top: 1px solid var(--border-default);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-top: 48px;
+            background-color: #090c10;
+        }
+
+        .offline-banner {
+            background-color: var(--accent-orange);
+            color: #000;
+            text-align: center;
+            padding: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            display: none;
+        }
+
+        /* --- Toast Notifications --- */
         #toast-container {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
+            bottom: 24px;
+            right: 24px;
             z-index: 10000;
         }
 
         .toast {
-            background: var(--card-bg);
-            border-left: 4px solid var(--primary);
-            padding: 16px 24px;
-            border-radius: 8px;
-            margin-top: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-left: 4px solid var(--accent-blue);
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-top: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             display: flex;
             align-items: center;
             gap: 12px;
             animation: slideInRight 0.3s ease-out;
+            font-size: 13px;
         }
 
         @keyframes slideInRight {
@@ -552,403 +1375,541 @@
         }
 
         /* --- Utilities --- */
-        .mb-10 { margin-bottom: 40px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-
-        footer {
-            padding: 60px 40px;
-            background: #020305;
-            border-top: 1px solid var(--border);
-            text-align: center;
-            color: var(--text-muted);
-        }
-
-        .offline-banner {
-            background: var(--warning);
-            color: black;
-            text-align: center;
-            padding: 4px;
-            font-weight: 700;
-            font-size: 0.8rem;
-            display: none;
-        }
-
-        .runbook-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 24px;
-            border-radius: 12px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .runbook-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-5px);
-        }
-
-        .runbook-card h4 {
-            margin-bottom: 8px;
-            color: var(--primary);
-        }
-
-        .runbook-content-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10001;
-        }
-
-        .modal-body {
-            background: var(--card-bg);
-            width: 80%;
-            max-width: 800px;
-            max-height: 80vh;
-            border-radius: 12px;
-            padding: 40px;
-            overflow-y: auto;
-            position: relative;
-            border: 1px solid var(--border);
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-muted);
-        }
-
+        .text-center { text-align: center; }
+        .mb-4 { margin-bottom: 16px; }
+        .mb-2 { margin-bottom: 8px; }
+        .mt-2 { margin-top: 8px; }
     </style>
 </head>
 <body>
 
-<div id="offline-banner" class="offline-banner">⚠️ DEMO MODE — Backend not connected. Showing sample data.</div>
-
-<nav>
-    <div class="logo">
-        <i class="fas fa-robot"></i> RUNBOOK AGENT
-    </div>
-    <div class="nav-links">
-        <a href="#dashboard">Dashboard</a>
-        <a href="#runbooks">Runbooks</a>
-        <a href="#history">History</a>
-        <a href="#about">About</a>
-    </div>
-    <div class="nav-right">
-        <div class="status-badge" style="display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-            <div class="status-dot" style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse-green 2s infinite;"></div>
-            Agent Online
-        </div>
-    </div>
-</nav>
-
-<section class="hero">
-    <h1>RUNBOOK AGENT</h1>
-    <p>Autonomous IT Operations Agent powered by Ollama LLaMA3. <br>Resolving complex infrastructure failures in real-time with zero manual effort.</p>
-    <div class="hero-btns">
-        <a href="#dashboard" class="btn btn-primary"><i class="fas fa-rocket"></i> View Live Demo</a>
-        <a href="#runbooks" class="btn btn-outline"><i class="fas fa-clipboard-list"></i> View Runbooks</a>
-    </div>
-</section>
-
-<!-- Stats Row -->
-<div class="stats-grid">
-    <div class="stat-card" style="border-left: 4px solid var(--success);">
-        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
-            <i class="fas fa-shield-check"></i>
-        </div>
-        <div class="stat-info">
-            <h3 id="stat-resolved">0</h3>
-            <p>Incidents Resolved</p>
-            <div class="stat-trend success">+0 today</div>
-        </div>
-    </div>
-    <div class="stat-card" style="border-left: 4px solid var(--primary);">
-        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--primary);">
-            <i class="fas fa-list-check"></i>
-        </div>
-        <div class="stat-info">
-            <h3 id="stat-steps">0</h3>
-            <p>Steps Executed</p>
-            <div class="stat-trend" style="color: var(--primary);">Real-time tracking</div>
-        </div>
-    </div>
-    <div class="stat-card" style="border-left: 4px solid var(--warning);">
-        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
-            <i class="fas fa-bell"></i>
-        </div>
-        <div class="stat-info">
-            <h3 id="stat-discord">0</h3>
-            <p>Alerts Sent</p>
-            <div class="stat-trend" style="color: var(--warning);">Discord Live</div>
-        </div>
-    </div>
-    <div class="stat-card" style="border-left: 4px solid var(--secondary);">
-        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--secondary);">
-            <i class="fas fa-clock"></i>
-        </div>
-        <div class="stat-info">
-            <h3 id="stat-avg">~4m</h3>
-            <p>Avg Resolution</p>
-            <div class="stat-trend" style="color: var(--secondary);">vs 45 min manual</div>
-        </div>
-    </div>
+<div id="offline-banner" class="offline-banner">
+    <i class="fas fa-triangle-exclamation"></i> DEMO MODE — FastAPI Backend not connected. Showing sample simulated operations.
 </div>
 
-<!-- Infra Status -->
-<section id="dashboard" class="page-section">
-    <div class="section-header">
-        <h2><i class="fas fa-server"></i> Infrastructure Status</h2>
-        <p>Real-time machine health monitoring</p>
+<!-- GitHub Header -->
+<header class="github-header">
+    <div class="header-left">
+        <a href="#" class="github-logo"><i class="fab fa-github"></i></a>
+        <div class="header-search">
+            <i class="fas fa-search"></i>
+            <span>Search or jump to...</span>
+        </div>
+        <span style="font-weight: 500; font-size: 13px; color: #ffffff;">Pull requests</span>
+        <span style="font-weight: 500; font-size: 13px; color: #ffffff;">Issues</span>
+        <span style="font-weight: 500; font-size: 13px; color: #ffffff;">Codespaces</span>
     </div>
-    <div class="infra-grid">
-        <!-- Nginx -->
-        <div class="server-card" id="card-nginx">
-            <div class="server-top">
-                <div class="server-id"><i class="fas fa-globe"></i> Web Server (Nginx)</div>
-                <div class="server-status-badge">
-                    <div class="server-status-dot"></div>
-                    <span id="status-nginx">HEALTHY</span>
-                </div>
-            </div>
-            <div class="server-metric">
-                <div class="metric-label">
-                    <span>Availability</span>
-                    <span id="metric-nginx">99.9%</span>
-                </div>
-                <div class="progress-bg"><div id="progress-nginx" class="progress-bar" style="width: 100%; background: var(--success);"></div></div>
-            </div>
-            <div class="metric-label" style="font-size: 0.7rem;">Last checked: 2s ago</div>
-        </div>
-        <!-- Database -->
-        <div class="server-card" id="card-database">
-            <div class="server-top">
-                <div class="server-id"><i class="fas fa-database"></i> Database Server</div>
-                <div class="server-status-badge">
-                    <div class="server-status-dot"></div>
-                    <span id="status-database">HEALTHY</span>
-                </div>
-            </div>
-            <div class="server-metric">
-                <div class="metric-label">
-                    <span>Connections</span>
-                    <span id="metric-database">42</span>
-                </div>
-                <div class="progress-bg"><div id="progress-database" class="progress-bar" style="width: 42%; background: var(--success);"></div></div>
-            </div>
-            <div class="metric-label" style="font-size: 0.7rem;">Last checked: 2s ago</div>
-        </div>
-        <!-- CPU -->
-        <div class="server-card" id="card-cpu">
-            <div class="server-top">
-                <div class="server-id"><i class="fas fa-microchip"></i> System CPU</div>
-                <div class="server-status-badge">
-                    <div class="server-status-dot"></div>
-                    <span id="status-cpu">NORMAL</span>
-                </div>
-            </div>
-            <div class="server-metric">
-                <div class="metric-label">
-                    <span>Current Load</span>
-                    <span id="metric-cpu">23%</span>
-                </div>
-                <div class="progress-bg"><div id="progress-cpu" class="progress-bar" style="width: 23%; background: var(--success);"></div></div>
-            </div>
-            <div class="metric-label" style="font-size: 0.7rem;">Last checked: 2s ago</div>
-        </div>
-        <!-- Disk -->
-        <div class="server-card" id="card-disk">
-            <div class="server-top">
-                <div class="server-id"><i class="fas fa-hard-drive"></i> Disk Usage</div>
-                <div class="server-status-badge">
-                    <div class="server-status-dot"></div>
-                    <span id="status-disk">NORMAL</span>
-                </div>
-            </div>
-            <div class="server-metric">
-                <div class="metric-label">
-                    <span>Storage Used</span>
-                    <span id="metric-disk">67%</span>
-                </div>
-                <div class="progress-bg"><div id="progress-disk" class="progress-bar" style="width: 67%; background: var(--success);"></div></div>
-            </div>
-            <div class="metric-label" style="font-size: 0.7rem;">Last checked: 2s ago</div>
-        </div>
+    <div class="header-right">
+        <button class="header-icon-btn"><i class="far fa-bell"></i></button>
+        <button class="header-icon-btn"><i class="fas fa-plus"></i></button>
+        <div class="avatar-img">PS</div>
     </div>
-</section>
+</header>
 
-<!-- Main Agent View -->
-<div class="action-container">
-    <!-- Left: Controls -->
-    <div class="trigger-list">
-        <div class="section-header">
-            <h2><i class="fas fa-bolt"></i> Demo Controls</h2>
-            <p>Trigger failures to activate the agent</p>
+<!-- Repo Subheader -->
+<div class="repo-subheader">
+    <div class="repo-title-row">
+        <div class="repo-path">
+            <i class="far fa-folder-open" style="color: var(--text-secondary);"></i>
+            <span class="repo-owner">PragathiSellamuthu</span>
+            <span style="color: var(--text-secondary);">/</span>
+            <span class="repo-name">RunBook-AI-Agent-</span>
+            <span class="repo-badge">Public</span>
         </div>
-        <div class="trigger-card" id="trigger-nginx">
-            <i class="fas fa-globe-africa fa-2x" style="color: var(--danger);"></i>
-            <div class="trigger-info">
-                <h4>Nginx Server Down</h4>
-                <p>Web server stopped responding (CRITICAL)</p>
-            </div>
-            <button class="btn-trigger" onclick="triggerFailure('nginx_down')">🔴 TRIGGER</button>
-        </div>
-        <div class="trigger-card" id="trigger-cpu">
-            <i class="fas fa-fire fa-2x" style="color: #f97316;"></i>
-            <div class="trigger-info">
-                <h4>High CPU Usage</h4>
-                <p>CPU at 94% — performance lag (HIGH)</p>
-            </div>
-            <button class="btn-trigger" onclick="triggerFailure('high_cpu')">🔴 TRIGGER</button>
-        </div>
-        <div class="trigger-card" id="trigger-database">
-            <i class="fas fa-database fa-2x" style="color: var(--danger);"></i>
-            <div class="trigger-info">
-                <h4>Database Failure</h4>
-                <p>PostgreSQL connection refused (CRITICAL)</p>
-            </div>
-            <button class="btn-trigger" onclick="triggerFailure('database_failure')">🔴 TRIGGER</button>
-        </div>
-        <div class="trigger-card" id="trigger-disk">
-            <i class="fas fa-hdd fa-2x" style="color: #f97316;"></i>
-            <div class="trigger-info">
-                <h4>Disk Space Critical</h4>
-                <p>Disk at 91% — space exhausted (HIGH)</p>
-            </div>
-            <button class="btn-trigger" onclick="triggerFailure('disk_full')">🔴 TRIGGER</button>
+        <div class="repo-actions-group">
+            <button class="repo-action-btn"><i class="far fa-eye"></i> Watch <span class="count">12</span></button>
+            <button class="repo-action-btn"><i class="far fa-star"></i> Star <span class="count">128</span></button>
+            <button class="repo-action-btn"><i class="fas fa-code-branch"></i> Fork <span class="count">48</span></button>
         </div>
     </div>
 
-    <!-- Right: Agent Feed -->
-    <div class="feed-card">
-        <div class="feed-header">
-            <div class="feed-status" id="agent-status-bar">
-                <div class="status-dot" style="background: var(--text-muted); animation: none; width: 8px; height: 8px; border-radius: 50%;"></div>
-                 Agent Idle — Waiting for incidents
-            </div>
-            <i class="fas fa-terminal"></i>
-        </div>
-        <div class="feed-body" id="agent-feed">
-            <div class="feed-entry"><span class="ts">[00:00:00]</span> ⚡ SYSTEM INITIALIZED. MCP TOOLS LOADED.</div>
-            <div class="feed-entry"><span class="ts">[00:00:00]</span> 🤖 RUNBOOK AGENT v1.0.0 Online.</div>
-        </div>
-        <div class="confirm-panel" id="confirm-panel">
-            <div style="font-weight: 700; color: var(--warning);"><i class="fas fa-triangle-exclamation"></i> HUMAN CONFIRMATION REQUIRED</div>
-            <div id="confirm-msg" style="font-size: 0.85rem; margin-top: 5px; color: var(--text-main);"></div>
-            <div class="confirm-btns">
-                <button class="btn btn-primary" style="background: var(--success); font-size: 0.8rem; padding: 6px 16px;" onclick="confirmStep()">✅ Confirm & Execute</button>
-                <button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger); font-size: 0.8rem; padding: 6px 16px;" onclick="skipStep()">❌ Skip</button>
-            </div>
-        </div>
-    </div>
+    <!-- Repository Navigation Tabs -->
+    <ul class="repo-nav-tabs">
+        <li id="tab-code" class="repo-tab active" onclick="switchTab('code')">
+            <i class="fas fa-code"></i> Code
+        </li>
+        <li id="tab-actions" class="repo-tab" onclick="switchTab('actions')">
+            <i class="far fa-play-circle"></i> Actions / Agent Console
+        </li>
+        <li id="tab-infra" class="repo-tab" onclick="switchTab('infra')">
+            <i class="fas fa-server"></i> Infrastructure Monitor
+        </li>
+        <li id="tab-runbooks" class="repo-tab" onclick="switchTab('runbooks')">
+            <i class="far fa-clipboard"></i> Runbooks
+        </li>
+        <li id="tab-history" class="repo-tab" onclick="switchTab('history')">
+            <i class="fas fa-history"></i> Execution History
+        </li>
+    </ul>
 </div>
 
-<!-- Runbooks Section -->
-<section id="runbooks" class="page-section">
-    <div class="section-header">
-        <h2><i class="fas fa-clipboard-list"></i> Operational Runbooks</h2>
-        <p>Pre-defined resolution strategies for common failures</p>
-    </div>
-    <div class="infra-grid">
-        <div class="runbook-card" onclick="viewRunbook('nginx_down.md')">
-            <i class="fas fa-globe fa-2x mb-2" style="color: var(--primary);"></i>
-            <h4>Nginx Server Down</h4>
-            <p>6 steps to restore web availability</p>
-        </div>
-        <div class="runbook-card" onclick="viewRunbook('high_cpu.md')">
-            <i class="fas fa-microchip fa-2x mb-2" style="color: var(--secondary);"></i>
-            <h4>High CPU Usage</h4>
-            <p>5 steps to mitigate performance lag</p>
-        </div>
-        <div class="runbook-card" onclick="viewRunbook('database_failure.md')">
-            <i class="fas fa-database fa-2x mb-2" style="color: var(--danger);"></i>
-            <h4>Database Failure</h4>
-            <p>6 steps to restore DB connectivity</p>
-        </div>
-        <div class="runbook-card" onclick="viewRunbook('disk_full.md')">
-            <i class="fas fa-hard-drive fa-2x mb-2" style="color: var(--warning);"></i>
-            <h4>Disk Space Critical</h4>
-            <p>6 steps to free up storage space</p>
-        </div>
-    </div>
-</section>
+<div class="container">
 
-<!-- Runbook Modal -->
+    <!-- TAB 1: CODE -->
+    <div id="view-code" class="tab-content active">
+        <!-- Subtle Hero Title Card -->
+        <div class="hero-title-card">
+            <div class="hero-title">RUNBOOK AGENT</div>
+            <div class="hero-subtitle">
+                <span class="hero-dot"></span>
+                Autonomous Incident Resolution Engine
+                <span class="hero-tag">v1.0.0</span>
+            </div>
+        </div>
+        <!-- Stats Row -->
+        <div class="stats-grid">
+            <div class="stat-card" style="border-left: 3px solid var(--accent-green);">
+                <div class="stat-icon" style="background: rgba(63, 185, 80, 0.15); color: var(--accent-green);">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="stat-resolved">0</h3>
+                    <p>Resolved Incidents</p>
+                    <div class="stat-trend" style="color: var(--accent-green);">+0 resolved today</div>
+                </div>
+            </div>
+            <div class="stat-card" style="border-left: 3px solid var(--accent-blue);">
+                <div class="stat-icon" style="background: rgba(88, 166, 255, 0.15); color: var(--accent-blue);">
+                    <i class="fas fa-terminal"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="stat-steps">0</h3>
+                    <p>Steps Executed</p>
+                    <div class="stat-trend" style="color: var(--text-secondary);">Real-time monitoring</div>
+                </div>
+            </div>
+            <div class="stat-card" style="border-left: 3px solid var(--accent-yellow);">
+                <div class="stat-icon" style="background: rgba(210, 153, 34, 0.15); color: var(--accent-yellow);">
+                    <i class="far fa-bell"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="stat-discord">0</h3>
+                    <p>Discord Alerts</p>
+                    <div class="stat-trend" style="color: var(--accent-yellow);">Webhook connection active</div>
+                </div>
+            </div>
+            <div class="stat-card" style="border-left: 3px solid var(--accent-purple);">
+                <div class="stat-icon" style="background: rgba(188, 140, 255, 0.15); color: var(--accent-purple);">
+                    <i class="far fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="stat-avg">~4m</h3>
+                    <p>Avg Resolution</p>
+                    <div class="stat-trend" style="color: var(--accent-purple);">vs 45 min manual</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="code-grid">
+            <!-- Left Main Column: File Explorer + README -->
+            <div>
+                <div class="file-box">
+                    <div class="file-box-header">
+                        <div class="commit-info">
+                            <span class="avatar-img" style="width: 20px; height: 20px; font-size: 9px;">PS</span>
+                            <span class="commit-author">PragathiSellamuthu</span>
+                            <span class="commit-msg">Redesigned professional dashboard & added interactive stack descriptions</span>
+                        </div>
+                        <div class="commit-meta">
+                            <span>latest commit 1 hour ago</span>
+                        </div>
+                    </div>
+                    <ul class="file-list">
+                        <li class="file-item">
+                            <div class="file-name-col">
+                                <i class="fas fa-folder"></i>
+                                <span>backend/</span>
+                            </div>
+                            <div class="file-commit-col">FastAPI application server and execution controls</div>
+                            <div class="file-age-col">1 hour ago</div>
+                        </li>
+                        <li class="file-item">
+                            <div class="file-name-col">
+                                <i class="fas fa-folder"></i>
+                                <span>frontend/</span>
+                            </div>
+                            <div class="file-commit-col">Revamped repository-themed Single Page App</div>
+                            <div class="file-age-col">10 mins ago</div>
+                        </li>
+                        <li class="file-item">
+                            <div class="file-name-col">
+                                <i class="fas fa-folder"></i>
+                                <span>runbooks/</span>
+                            </div>
+                            <div class="file-commit-col">Operations execution runbooks (Markdown format)</div>
+                            <div class="file-age-col">1 day ago</div>
+                        </li>
+                        <li class="file-item">
+                            <div class="file-name-col">
+                                <i class="far fa-file-code"></i>
+                                <span>.env.example</span>
+                            </div>
+                            <div class="file-commit-col">Config settings schema for Ollama & Discord hooks</div>
+                            <div class="file-age-col">1 day ago</div>
+                        </li>
+                        <li class="file-item">
+                            <div class="file-name-col">
+                                <i class="far fa-file-lines"></i>
+                                <span>.gitignore</span>
+                            </div>
+                            <div class="file-commit-col">Ignore venv, config, logs and database</div>
+                            <div class="file-age-col">1 day ago</div>
+                        </li>
+                        <li class="file-item">
+                            <div class="file-name-col">
+                                <i class="far fa-file-lines"></i>
+                                <span>README.md</span>
+                            </div>
+                            <div class="file-commit-col">Update intelligence stack details</div>
+                            <div class="file-age-col">3 hours ago</div>
+                        </li>
+                        <li class="file-item">
+                            <div class="file-name-col">
+                                <i class="far fa-file-code"></i>
+                                <span>requirements.txt</span>
+                            </div>
+                            <div class="file-commit-col">Dependencies list (FastAPI, uvicorn, SQLite, Dotenv)</div>
+                            <div class="file-age-col">1 day ago</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- README Box -->
+                <div class="readme-box">
+                    <div class="readme-header">
+                        <i class="fas fa-book-open" style="color: var(--text-secondary);"></i>
+                        <span>README.md</span>
+                    </div>
+                    <div class="readme-body">
+                        <h1>🤖 RUNBOOK AGENT</h1>
+                        <p><strong>Autonomous Incident Resolution Engine powered by local Llama 3</strong></p>
+                        <p>RUNBOOK AGENT is an autonomous agent that monitors infrastructure servers, identifies real-time failures, and walks through recovery runbooks. It uses the Model Context Protocol (MCP) to safely execute diagnostic and repair commands.</p>
+                        
+                        <h2>🚀 Features</h2>
+                        <ul>
+                            <li><strong>Deterministic Autonomy</strong>: Safely executes markdown-based operations step by step.</li>
+                            <li><strong>AI Classification</strong>: Local Llama 3 identifies RISK level (SAFE vs RISKY) for all runbook commands.</li>
+                            <li><strong>Human-in-the-Loop</strong>: Securely pauses for approvals before executing risky commands.</li>
+                            <li><strong>Real-time Dashboard</strong>: Continuous terminal output log stream and server metrics tracker.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar Column: Metadata & Interactive Stack -->
+            <div>
+                <div class="sidebar-section">
+                    <h3 class="sidebar-heading">About</h3>
+                    <p class="sidebar-text">Autonomous DevOps IT Operations Agent bridging AI reasoning with system execution tools via Model Context Protocol (MCP).</p>
+                    <div class="sidebar-text">
+                        <i class="fas fa-link" style="margin-right: 6px;"></i> <a href="#actions" onclick="switchTab('actions'); return false;">Launch Agent Console</a>
+                    </div>
+                </div>
+
+                <!-- Interactive Tech Stack Section -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-heading">🛠️ Technology Stack</h3>
+                    <p class="sidebar-text" style="font-size: 11px; margin-bottom: 10px;">Click a component to explore its role in the architecture</p>
+                    <div class="tech-list">
+                        <button class="tech-btn" id="tech-py" onclick="showTechDetail('py')">
+                            <i class="fab fa-python" style="color: #3776ab;"></i>
+                            <div class="tech-btn-title">Python 3.11</div>
+                            <div class="tech-btn-subtitle">Backend Core</div>
+                        </button>
+                        <button class="tech-btn" id="tech-fastapi" onclick="showTechDetail('fastapi')">
+                            <i class="fas fa-bolt" style="color: #009688;"></i>
+                            <div class="tech-btn-title">FastAPI</div>
+                            <div class="tech-btn-subtitle">REST Gateway</div>
+                        </button>
+                        <button class="tech-btn" id="tech-llama" onclick="showTechDetail('llama')">
+                            <i class="fas fa-brain" style="color: #facc15;"></i>
+                            <div class="tech-btn-title">Llama 3</div>
+                            <div class="tech-btn-subtitle">AI Brain</div>
+                        </button>
+                        <button class="tech-btn" id="tech-mcp" onclick="showTechDetail('mcp')">
+                            <i class="fas fa-code-branch" style="color: var(--accent-purple);"></i>
+                            <div class="tech-btn-title">MCP</div>
+                            <div class="tech-btn-subtitle">Executor</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-heading">Releases</h3>
+                    <p class="sidebar-text" style="font-size: 12px;"><i class="fas fa-tags" style="color: var(--accent-green); margin-right: 6px;"></i> <a href="#">v1.0.0 (Latest)</a></p>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-heading">Contributors</h3>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="avatar-img" style="background-color: var(--accent-blue); color: #000; font-weight: 700;">PS</span>
+                        <span style="font-size: 13px; font-weight: 500;">PragathiSellamuthu</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: ACTIONS (AGENT CONSOLE & TRIGGER FAILURE CONTROLS) -->
+    <div id="view-actions" class="tab-content">
+        <div class="actions-layout">
+            <!-- Left: Incident Control Board -->
+            <div class="workflow-box">
+                <div class="workflow-title-sec">
+                    <h3>Incident Workflows</h3>
+                    <p>Trigger server incidents to test the autonomous agent response loop</p>
+                </div>
+                <div class="workflow-list">
+                    <div class="workflow-run-item" id="trigger-nginx">
+                        <div class="workflow-run-meta">
+                            <h4>Nginx Web Server Incident</h4>
+                            <p style="color: var(--accent-red); font-weight: 600;"><i class="fas fa-globe"></i> CRITICAL FAILURE</p>
+                        </div>
+                        <button class="workflow-trigger-btn btn-trigger" onclick="triggerFailure('nginx_down')">Trigger Run</button>
+                    </div>
+                    <div class="workflow-run-item" id="trigger-cpu">
+                        <div class="workflow-run-meta">
+                            <h4>CPU High Load Incident</h4>
+                            <p style="color: var(--accent-orange); font-weight: 600;"><i class="fas fa-microchip"></i> PERFORMANCE SPIKE (94%)</p>
+                        </div>
+                        <button class="workflow-trigger-btn btn-trigger" onclick="triggerFailure('high_cpu')">Trigger Run</button>
+                    </div>
+                    <div class="workflow-run-item" id="trigger-database">
+                        <div class="workflow-run-meta">
+                            <h4>Database Refused Incident</h4>
+                            <p style="color: var(--accent-red); font-weight: 600;"><i class="fas fa-database"></i> CRITICAL FAILURE</p>
+                        </div>
+                        <button class="workflow-trigger-btn btn-trigger" onclick="triggerFailure('database_failure')">Trigger Run</button>
+                    </div>
+                    <div class="workflow-run-item" id="trigger-disk">
+                        <div class="workflow-run-meta">
+                            <h4>Disk Space Exhausted Incident</h4>
+                            <p style="color: var(--accent-orange); font-weight: 600;"><i class="fas fa-hard-drive"></i> STORAGE SPIKE (91%)</p>
+                        </div>
+                        <button class="workflow-trigger-btn btn-trigger" onclick="triggerFailure('disk_full')">Trigger Run</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Real-time Terminal Log Console -->
+            <div class="terminal-box">
+                <div class="terminal-header">
+                    <div class="terminal-status-lbl" id="agent-status-bar">
+                        <div class="server-status-dot" style="background: var(--text-secondary); animation: none;"></div>
+                        <span>Agent Idle — Waiting for incidents</span>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px;"><i class="fas fa-terminal"></i> Console Log</div>
+                </div>
+                <div class="terminal-body" id="agent-feed">
+                    <div class="log-line"><span class="log-ts">[00:00:00]</span> <span class="log-info">SYSTEM INITIALIZED</span> — MCP Client successfully loaded. Allowlist commands active.</div>
+                    <div class="log-line"><span class="log-ts">[00:00:00]</span> <span class="log-success">RUNBOOK AGENT v1.0.0</span> — Connected and awaiting triggers.</div>
+                </div>
+
+                <!-- Approval Gate (Human in the loop) -->
+                <div class="approval-gate-panel" id="confirm-panel">
+                    <div class="approval-gate-header">
+                        <i class="fas fa-triangle-exclamation"></i> REVIEW REQUIRED: MANUAL INTERVENTION REQUESTED
+                    </div>
+                    <div class="approval-gate-msg" id="confirm-msg"></div>
+                    <div class="approval-actions">
+                        <button class="btn-approve" onclick="confirmStep()"><i class="fas fa-check"></i> Approve & Execute</button>
+                        <button class="btn-skip" onclick="skipStep()"><i class="fas fa-forward"></i> Skip Step</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: INFRASTRUCTURE MONITOR -->
+    <div id="view-infra" class="tab-content">
+        <div class="workflow-title-sec mb-4">
+            <h2>Infrastructure Server Monitor</h2>
+            <p>Real-time machine performance telemetry & cluster health state</p>
+        </div>
+        <div class="infra-grid">
+            <!-- Nginx -->
+            <div class="server-card" id="card-nginx">
+                <div class="server-top">
+                    <div class="server-id"><i class="fas fa-globe"></i> Web Server (Nginx)</div>
+                    <div class="server-status-badge">
+                        <div class="server-status-dot"></div>
+                        <span id="status-nginx">HEALTHY</span>
+                    </div>
+                </div>
+                <div class="server-metric">
+                    <div class="metric-label">
+                        <span>Availability Rate</span>
+                        <span id="metric-nginx">99.9%</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div id="progress-nginx" class="progress-bar" style="width: 100%; background-color: var(--accent-green);"></div>
+                    </div>
+                </div>
+                <div class="metric-label" style="font-size: 11px; margin-top: 8px;">Last telemetry check: 2s ago</div>
+            </div>
+
+            <!-- Database -->
+            <div class="server-card" id="card-database">
+                <div class="server-top">
+                    <div class="server-id"><i class="fas fa-database"></i> PostgreSQL DB</div>
+                    <div class="server-status-badge">
+                        <div class="server-status-dot"></div>
+                        <span id="status-database">HEALTHY</span>
+                    </div>
+                </div>
+                <div class="server-metric">
+                    <div class="metric-label">
+                        <span>Active Connections</span>
+                        <span id="metric-database">42</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div id="progress-database" class="progress-bar" style="width: 42%; background-color: var(--accent-green);"></div>
+                    </div>
+                </div>
+                <div class="metric-label" style="font-size: 11px; margin-top: 8px;">Last telemetry check: 2s ago</div>
+            </div>
+
+            <!-- CPU -->
+            <div class="server-card" id="card-cpu">
+                <div class="server-top">
+                    <div class="server-id"><i class="fas fa-microchip"></i> System CPU Load</div>
+                    <div class="server-status-badge">
+                        <div class="server-status-dot"></div>
+                        <span id="status-cpu">NORMAL</span>
+                    </div>
+                </div>
+                <div class="server-metric">
+                    <div class="metric-label">
+                        <span>Core Load Factor</span>
+                        <span id="metric-cpu">23%</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div id="progress-cpu" class="progress-bar" style="width: 23%; background-color: var(--accent-green);"></div>
+                    </div>
+                </div>
+                <div class="metric-label" style="font-size: 11px; margin-top: 8px;">Last telemetry check: 2s ago</div>
+            </div>
+
+            <!-- Disk -->
+            <div class="server-card" id="card-disk">
+                <div class="server-top">
+                    <div class="server-id"><i class="fas fa-hard-drive"></i> SSD Storage (NVMe)</div>
+                    <div class="server-status-badge">
+                        <div class="server-status-dot"></div>
+                        <span id="status-disk">NORMAL</span>
+                    </div>
+                </div>
+                <div class="server-metric">
+                    <div class="metric-label">
+                        <span>Storage Occupancy</span>
+                        <span id="metric-disk">67%</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div id="progress-disk" class="progress-bar" style="width: 67%; background-color: var(--accent-green);"></div>
+                    </div>
+                </div>
+                <div class="metric-label" style="font-size: 11px; margin-top: 8px;">Last telemetry check: 2s ago</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: RUNBOOKS -->
+    <div id="view-runbooks" class="tab-content">
+        <div class="workflow-title-sec mb-4">
+            <h2>Operational Runbooks</h2>
+            <p>Select a pre-compiled markdown runbook blueprint to inspect recovery instructions</p>
+        </div>
+        <div class="runbooks-grid">
+            <div class="runbook-card" onclick="viewRunbook('nginx_down.md')">
+                <i class="fas fa-globe fa-2x" style="color: var(--accent-blue);"></i>
+                <h4>nginx_down.md</h4>
+                <p>6 steps to restore web server daemon and verify endpoint health</p>
+            </div>
+            <div class="runbook-card" onclick="viewRunbook('high_cpu.md')">
+                <i class="fas fa-microchip fa-2x" style="color: var(--accent-purple);"></i>
+                <h4>high_cpu.md</h4>
+                <p>5 steps to diagnose threads, identify processes and auto-limit usage</p>
+            </div>
+            <div class="runbook-card" onclick="viewRunbook('database_failure.md')">
+                <i class="fas fa-database fa-2x" style="color: var(--accent-red);"></i>
+                <h4>database_failure.md</h4>
+                <p>6 steps to recover db service, repair socket locks, and check connection pool</p>
+            </div>
+            <div class="runbook-card" onclick="viewRunbook('disk_full.md')">
+                <i class="fas fa-hard-drive fa-2x" style="color: var(--accent-yellow);"></i>
+                <h4>disk_full.md</h4>
+                <p>6 steps to clear caches, rotate journal logs, and free active sector blocks</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: EXECUTION HISTORY -->
+    <div id="view-history" class="tab-content">
+        <div class="history-section-header">
+            <div>
+                <h2>Resolution Run History</h2>
+                <p>Audit trail of execution outcomes, durations, and Discord alerts</p>
+            </div>
+            <button class="repo-action-btn" onclick="exportHistory()"><i class="fas fa-download"></i> Export History CSV</button>
+        </div>
+        
+        <div class="history-table-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Job Run ID</th>
+                        <th>Time Triggered</th>
+                        <th>Incident Type</th>
+                        <th>Target Runbook</th>
+                        <th>Completed Steps</th>
+                        <th>Status</th>
+                        <th>Alert Channel</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body">
+                    <!-- Loaded dynamically from API -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Runbook Content View Modal -->
 <div id="runbook-modal" class="runbook-content-modal" onclick="closeModal()">
     <div class="modal-body" onclick="event.stopPropagation()">
         <span class="close-modal" onclick="closeModal()">&times;</span>
-        <h2 id="modal-title" style="margin-bottom: 20px; color: var(--primary);"></h2>
-        <pre id="modal-content" style="white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-muted);"></pre>
+        <h2 id="modal-title" style="margin-bottom: 16px; color: var(--accent-blue); font-size: 18px;"></h2>
+        <pre id="modal-content" style="white-space: pre-wrap; font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); background-color: var(--bg-canvas); padding: 16px; border: 1px solid var(--border-default); border-radius: 4px; max-height: 55vh; overflow-y: auto;"></pre>
     </div>
 </div>
 
-<!-- History Table -->
-<section id="history" class="page-section">
-    <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
-        <div>
-            <h2><i class="fas fa-history"></i> Execution History</h2>
-            <p>Recent incident resolutions and agent performance</p>
-        </div>
-        <button class="btn btn-outline" style="font-size: 0.8rem;" onclick="exportHistory()"><i class="fas fa-download"></i> Export CSV</button>
-    </div>
-    <table class="history-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Time Started</th>
-                <th>Failure Type</th>
-                <th>Runbook</th>
-                <th>Steps</th>
-                <th>Status</th>
-                <th>Discord</th>
-            </tr>
-        </thead>
-        <tbody id="history-body">
-            <!-- Dynamic rows -->
-        </tbody>
-    </table>
-</section>
-
-<!-- Tech Stack -->
-<section id="about" class="page-section">
-    <div class="section-header text-center">
-        <h2>🛠️ Technology Stack</h2>
-        <p>Built for the Modern DevOps Enterprise</p>
-    </div>
-    <div class="infra-grid">
-        <div class="stat-card" style="padding: 15px; border: 1px solid var(--border);">
-            <i class="fab fa-python fa-2x" style="color: #3776ab;"></i>
-            <div><div style="font-weight: 700;">Python 3.11</div><p style="font-size: 0.7rem;">Backend Core</p></div>
-        </div>
-        <div class="stat-card" style="padding: 15px; border: 1px solid var(--border);">
-            <i class="fas fa-bolt fa-2x" style="color: #009688;"></i>
-            <div><div style="font-weight: 700;">FastAPI</div><p style="font-size: 0.7rem;">REST Gateway</p></div>
-        </div>
-        <div class="stat-card" style="padding: 15px; border: 1px solid var(--border);">
-            <i class="fas fa-brain fa-2x" style="color: #facc15;"></i>
-            <div><div style="font-weight: 700;">Ollama Llama3</div><p style="font-size: 0.7rem;">Local Brain</p></div>
-        </div>
-        <div class="stat-card" style="padding: 15px; border: 1px solid var(--border);">
-            <i class="fas fa-code-branch fa-2x" style="color: var(--secondary);"></i>
-            <div><div style="font-weight: 700;">MCP Protocol</div><p style="font-size: 0.7rem;">Execution Layer</p></div>
-        </div>
-    </div>
-</section>
-
 <div id="toast-container"></div>
 
-<footer>
-    <div class="logo" style="justify-content: center; margin-bottom: 0;">
-        <i class="fas fa-robot"></i> RUNBOOK AGENT
+<!-- Tech Stack Modal Overlay -->
+<div class="tech-modal-overlay" id="tech-modal-overlay" onclick="closeTechModal(event)">
+    <div class="tech-modal-card" onclick="event.stopPropagation()">
+        <button class="tech-modal-close" onclick="closeTechModal()"><i class="fas fa-xmark"></i></button>
+        <div class="tech-modal-glow" id="tech-modal-glow"></div>
+        <div class="tech-modal-particles" id="tech-modal-particles"></div>
+        <div class="tech-modal-header">
+            <div class="tech-modal-icon" id="tech-modal-icon"></div>
+            <div class="tech-modal-name" id="tech-modal-name"></div>
+            <div class="tech-modal-role" id="tech-modal-role"></div>
+        </div>
+        <div class="tech-modal-body">
+            <div class="tech-modal-desc" id="tech-modal-desc"></div>
+            <div class="tech-modal-section-label">Execution Pipeline</div>
+            <div class="tech-modal-flow" id="tech-modal-flow"></div>
+            <div class="tech-modal-section-label">Capabilities</div>
+            <div class="tech-modal-features" id="tech-modal-features"></div>
+        </div>
     </div>
+</div>
+
+<footer>
+    <div style="margin-bottom: 6px;"><i class="fab fa-github" style="font-size: 18px; color: var(--text-secondary);"></i></div>
+    <div style="color: var(--text-secondary);">© 2025 RunBook-AI-Agent- &nbsp;·&nbsp; Autonomous SRE Platform</div>
 </footer>
 
 <script>
@@ -959,7 +1920,192 @@
     let lastLogCount = 0;
     let isOffline = false;
 
-    // --- Core Functions ---
+    // --- Tab Switching Navigation ---
+    function switchTab(tabId) {
+        // Update navigation tab highlights
+        const tabs = document.querySelectorAll('.repo-tab');
+        tabs.forEach(tab => {
+            if (tab.id === `tab-${tabId}`) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+
+        // Update active content panels
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => {
+            if (content.id === `view-${tabId}`) {
+                content.classList.add('active');
+            } else {
+                content.classList.remove('active');
+            }
+        });
+
+        // Save active tab state in hash URL
+        window.location.hash = tabId;
+    }
+
+    // Initialize Active Tab based on URL Hash
+    function initActiveTab() {
+        const hash = window.location.hash.replace('#', '');
+        const validTabs = ['code', 'actions', 'infra', 'runbooks', 'history'];
+        if (hash && validTabs.includes(hash)) {
+            switchTab(hash);
+        } else {
+            switchTab('code');
+        }
+    }
+
+    // --- Interactive Technology Stack (Full Modal Experience) ---
+    const techData = {
+        py: {
+            name: 'Python 3.11',
+            role: 'Orchestration Core',
+            icon: '<i class="fab fa-python"></i>',
+            color: '#3776ab',
+            desc: 'Serves as the primary operational brain of the entire system. It coordinates multi-threaded asynchronous execution, reads and parses markdown runbooks into executable step sequences, manages runtime state parameters, handles SQLite database persistence, and bridges MCP execution modules with LLM inference requests.',
+            flow: ['Agent Runner', 'Runbook Parser', 'Risk Classifier', 'SQL Registry', 'State Manager'],
+            features: ['Async Threading', 'Markdown Parsing', 'SQLite ORM', 'State Coordination', 'Error Handling']
+        },
+        fastapi: {
+            name: 'FastAPI',
+            role: 'REST API Gateway',
+            icon: '<i class="fas fa-bolt"></i>',
+            color: '#009688',
+            desc: 'Bridges all operations telemetry to the web dashboard through high-performance async REST endpoints. It serves the static frontend, handles incident trigger POST requests, manages BackgroundTask threads for long-running agent loops, and forwards human confirmation signals back to the runner thread in real-time.',
+            flow: ['Dashboard UI', 'REST Router', 'BackgroundTasks', 'DB Feed', 'WebSocket Events'],
+            features: ['Async Endpoints', 'CORS Middleware', 'Background Jobs', 'Static File Serving', 'Auto-docs']
+        },
+        llama: {
+            name: 'Ollama Llama 3',
+            role: 'AI Classification Engine',
+            icon: '<i class="fas fa-brain"></i>',
+            color: '#facc15',
+            desc: 'Performs natural language risk classification entirely on localhost. For every runbook step, it evaluates the command context, analyzes blast radius and impact vectors, and outputs structured safety indicators — SAFE commands execute automatically, while RISKY commands trigger the human-in-the-loop approval gate before proceeding.',
+            flow: ['Step Context', 'Risk Prompt', 'Llama 3 Inference', 'Safety Label', 'Gate Decision'],
+            features: ['Local Inference', 'Zero Latency', 'Risk Analysis', 'Prompt Engineering', 'Privacy-First']
+        },
+        mcp: {
+            name: 'MCP Protocol',
+            role: 'Sandboxed Executor',
+            icon: '<i class="fas fa-code-branch"></i>',
+            color: '#bc8cff',
+            desc: 'Acts as the strict sandboxed gateway between AI reasoning and system-level execution. It enforces a security allowlist to prevent arbitrary script injection, validates each command against approved patterns, executes shell operations in a controlled environment, and returns structured telemetry output back to the agent loop.',
+            flow: ['Allowlist Check', 'Command Validate', 'Shell Execute', 'Output Capture', 'Telemetry Return'],
+            features: ['Command Allowlist', 'Sandboxed Exec', 'Output Parsing', 'Security Gate', 'Audit Logging']
+        }
+    };
+
+    let techModalOpen = false;
+
+    function showTechDetail(techId) {
+        const data = techData[techId];
+        if (!data) return;
+
+        // Highlight active button
+        document.querySelectorAll('.tech-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.id === `tech-${techId}`);
+        });
+
+        // Populate modal content
+        const overlay = document.getElementById('tech-modal-overlay');
+        document.getElementById('tech-modal-glow').style.background = data.color;
+        document.getElementById('tech-modal-icon').innerHTML = data.icon;
+        document.getElementById('tech-modal-icon').style.background = `${data.color}20`;
+        document.getElementById('tech-modal-icon').style.color = data.color;
+        document.getElementById('tech-modal-name').textContent = data.name;
+        document.getElementById('tech-modal-role').textContent = data.role;
+        document.getElementById('tech-modal-role').style.color = data.color;
+
+        // Typewriter description
+        const descEl = document.getElementById('tech-modal-desc');
+        descEl.textContent = '';
+        let charIdx = 0;
+        const typeSpeed = 8;
+        function typeChar() {
+            if (charIdx < data.desc.length) {
+                descEl.textContent += data.desc[charIdx];
+                charIdx++;
+                setTimeout(typeChar, typeSpeed);
+            }
+        }
+        setTimeout(typeChar, 300);
+
+        // Animated flow pipeline steps
+        const flowEl = document.getElementById('tech-modal-flow');
+        flowEl.innerHTML = '';
+        data.flow.forEach((step, i) => {
+            if (i > 0) {
+                const arrow = document.createElement('span');
+                arrow.className = 'flow-arrow';
+                arrow.textContent = '→';
+                arrow.style.animationDelay = `${i * 0.12}s`;
+                flowEl.appendChild(arrow);
+            }
+            const el = document.createElement('span');
+            el.className = 'flow-step';
+            el.textContent = step;
+            el.style.animationDelay = `${i * 0.12}s`;
+            el.style.borderColor = `${data.color}30`;
+            el.style.background = `${data.color}10`;
+            el.style.color = data.color;
+            flowEl.appendChild(el);
+        });
+
+        // Feature capability tags
+        const featEl = document.getElementById('tech-modal-features');
+        featEl.innerHTML = '';
+        data.features.forEach(f => {
+            const tag = document.createElement('span');
+            tag.className = 'tech-feature-tag';
+            tag.textContent = f;
+            featEl.appendChild(tag);
+        });
+
+        // Spawn floating particles
+        spawnParticles(data.color);
+
+        // Show overlay with animation
+        overlay.style.display = 'flex';
+        requestAnimationFrame(() => {
+            overlay.classList.add('visible');
+        });
+        techModalOpen = true;
+    }
+
+    function closeTechModal(e) {
+        if (e && e.target !== e.currentTarget) return;
+        const overlay = document.getElementById('tech-modal-overlay');
+        overlay.classList.remove('visible');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 350);
+        techModalOpen = false;
+        document.querySelectorAll('.tech-btn').forEach(btn => btn.classList.remove('active'));
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && techModalOpen) closeTechModal();
+    });
+
+    function spawnParticles(color) {
+        const container = document.getElementById('tech-modal-particles');
+        container.innerHTML = '';
+        for (let i = 0; i < 20; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = `${Math.random() * 100}%`;
+            p.style.bottom = `${Math.random() * 30}%`;
+            p.style.background = color;
+            p.style.animationDelay = `${Math.random() * 2}s`;
+            p.style.animationDuration = `${2 + Math.random() * 2}s`;
+            container.appendChild(p);
+        }
+    }
+
+    // --- Core Operations & Telemetry ---
 
     async function fetchStatus() {
         try {
@@ -969,20 +2115,20 @@
             document.getElementById('offline-banner').style.display = 'none';
             updateUIStatus(data);
         } catch (e) {
-            console.warn("Backend offline");
+            console.warn("Backend offline, working in simulated demo mode.");
             isOffline = true;
             document.getElementById('offline-banner').style.display = 'block';
         }
     }
 
     function updateUIStatus(data) {
-        // Server Cards
+        // Server Cards Monitor
         updateServerCard('nginx', data.nginx, data.nginx === 'healthy' ? '99.9%' : 'OFFLINE');
-        updateServerCard('database', data.database, data.database === 'healthy' ? '42 conn' : 'REJECTED');
-        updateServerCard('cpu', data.cpu, data.cpu === 'normal' ? '23%' : '94%');
-        updateServerCard('disk', data.disk, data.disk === 'normal' ? '67%' : '91%');
+        updateServerCard('database', data.database, data.database === 'healthy' ? '42 conns' : 'REJECTED');
+        updateServerCard('cpu', data.cpu, data.cpu === 'normal' ? '23%' : '94% LOAD');
+        updateServerCard('disk', data.disk, data.disk === 'normal' ? '67%' : '91% FULL');
 
-        // Agent Button States
+        // Agent Trigger Buttons State (Lock inputs when agent processing is busy)
         const btns = document.querySelectorAll('.btn-trigger');
         btns.forEach(b => {
              if (data.agent_busy) b.disabled = true;
@@ -992,9 +2138,9 @@
         // Global Agent Status Bar
         const statusBar = document.getElementById('agent-status-bar');
         if (data.agent_busy) {
-            statusBar.innerHTML = `<div class="status-dot" style="background: var(--primary); animation: pulse-green 1s infinite;"></div> Agent Active — Resolving Incident...`;
+            statusBar.innerHTML = `<div class="server-status-dot" style="background: var(--accent-blue); animation: pulse-orange 1s infinite;"></div> <span>Agent Active — Resolving Incident...</span>`;
         } else {
-            statusBar.innerHTML = `<div class="status-dot" style="background: var(--text-muted);"></div> Agent Idle — Waiting for incidents`;
+            statusBar.innerHTML = `<div class="server-status-dot" style="background: var(--text-secondary);"></div> <span>Agent Idle — Waiting for incidents</span>`;
         }
     }
 
@@ -1009,12 +2155,12 @@
             statusSpan.innerText = status.toUpperCase();
             metricSpan.innerText = metric;
             progress.style.width = '100%';
-            progress.style.background = 'var(--danger)';
+            progress.style.backgroundColor = 'var(--accent-red)';
         } else {
             card.classList.remove('down');
             statusSpan.innerText = 'HEALTHY';
             metricSpan.innerText = metric;
-            progress.style.background = 'var(--success)';
+            progress.style.backgroundColor = 'var(--accent-green)';
             if (id === 'cpu') progress.style.width = '23%';
             else if (id === 'disk') progress.style.width = '67%';
             else progress.style.width = '100%';
@@ -1039,28 +2185,34 @@
     function addFeedEntry(entry) {
         const feed = document.getElementById('agent-feed');
         const div = document.createElement('div');
-        div.className = 'feed-entry';
+        div.className = 'log-line';
         
-        let colorClass = 'info-text';
-        if (entry.status.includes('FAILURE') || entry.status.includes('FAILED')) colorClass = 'failure-text';
-        if (entry.status.includes('RESOLVED') || entry.status.includes('SUCCESS')) colorClass = 'success-text';
-        if (entry.status.includes('CONFIRMATION')) colorClass = 'wait-text';
+        let colorClass = 'log-info';
+        if (entry.status.includes('FAILURE') || entry.status.includes('FAILED')) colorClass = 'log-failure';
+        if (entry.status.includes('RESOLVED') || entry.status.includes('SUCCESS')) colorClass = 'log-success';
+        if (entry.status.includes('CONFIRMATION')) colorClass = 'log-warning';
 
-        div.innerHTML = `<span class="ts">[${entry.timestamp}]</span> <span class="${colorClass}">${entry.status}</span> — ${entry.message}`;
+        div.innerHTML = `<span class="log-ts">[${entry.timestamp}]</span> <span class="${colorClass}">${entry.status}</span> — ${entry.message}`;
         feed.appendChild(div);
         feed.scrollTop = feed.scrollHeight;
+
+        // Auto-switch to Actions tab when an incident triggers
+        if (lastLogCount === 2) {
+            switchTab('actions');
+        }
 
         // Handle Confirmation Panel
         const panel = document.getElementById('confirm-panel');
         if (entry.needs_confirm) {
             panel.classList.add('active');
-            document.getElementById('confirm-msg').innerText = `${entry.message}\nRisk: ${entry.risk || "Restarting core service"}`;
-            showToast("⚠️ Intervention Required!", "warning");
+            document.getElementById('confirm-msg').innerText = `${entry.message}\nAction risk factor: ${entry.risk || "Restarting core service"}`;
+            showToast("Intervention required: review deployment approvals", "warning");
         }
     }
 
     async function triggerFailure(type) {
-        showToast("🚨 Triggering incident...", "info");
+        showToast("Triggering server incident...", "info");
+        switchTab('actions');
         try {
             await fetch(`${API_BASE}/api/trigger/${type}`, { method: 'POST' });
             fetchStatus();
@@ -1072,24 +2224,24 @@
     async function confirmStep() {
         document.getElementById('confirm-panel').classList.remove('active');
         await fetch(`${API_BASE}/api/confirm`, { method: 'POST' });
-        showToast("✅ Confirmed. Agent continuing...", "success");
+        showToast("Deployment approved. Continuing runbook execution...", "success");
     }
 
     async function skipStep() {
         document.getElementById('confirm-panel').classList.remove('active');
         await fetch(`${API_BASE}/api/skip`, { method: 'POST' });
-        showToast("⏭️ Step skipped.", "info");
+        showToast("Step skipped by user command.", "info");
     }
 
     async function viewRunbook(name) {
         try {
             const res = await fetch(`${API_BASE}/api/runbooks/${name}`);
             const data = await res.json();
-            document.getElementById('modal-title').innerText = `Runbook: ${name}`;
+            document.getElementById('modal-title').innerText = `runbooks / ${name}`;
             document.getElementById('modal-content').innerText = data.content;
             document.getElementById('runbook-modal').style.display = 'flex';
         } catch (e) {
-            showToast("Failed to fetch runbook", "error");
+            showToast("Failed to fetch runbook markdown file", "error");
         }
     }
 
@@ -1105,7 +2257,7 @@
             const body = document.getElementById('history-body');
             body.innerHTML = '';
             
-            data.forEach((row, i) => {
+            data.forEach((row) => {
                 const tr = document.createElement('tr');
                 const statusBadge = row.status === 'completed' ? 'badge-success' : (row.status === 'running' ? 'badge-running' : 'badge-fail');
                 tr.innerHTML = `
@@ -1115,12 +2267,12 @@
                     <td>${row.runbook_name}</td>
                     <td>${row.completed_steps}/${row.total_steps}</td>
                     <td><span class="badge ${statusBadge}">${row.status}</span></td>
-                    <td><i class="fas fa-bell" style="color: var(--warning);"></i> Sent</td>
+                    <td><i class="far fa-bell" style="color: var(--accent-yellow);"></i> Active</td>
                 `;
                 body.appendChild(tr);
             });
 
-            // Update stats from another endpoint
+            // Update stats counter values
             const statRes = await fetch(`${API_BASE}/api/stats`);
             const stats = await statRes.json();
             document.getElementById('stat-resolved').innerText = stats.total_runs;
@@ -1132,7 +2284,6 @@
     }
 
     async function exportHistory() {
-        console.log("Export triggered...");
         if (isOffline) {
             showToast("Cannot export in demo mode", "warning");
             return;
@@ -1141,14 +2292,12 @@
             const res = await fetch(`${API_BASE}/api/history`);
             if (!res.ok) throw new Error("Server error");
             const data = await res.json();
-            console.log("History data received:", data);
             
             if (!data || data.length === 0) {
-                showToast("No history to export", "info");
+                showToast("No history record available to export", "info");
                 return;
             }
 
-            // Define CSV headers
             const headers = ["ID", "Time Started", "Failure Type", "Runbook", "Steps Completed", "Total Steps", "Status"];
             const rows = data.map(r => [
                 r.id,
@@ -1160,10 +2309,7 @@
                 `"${r.status}"`
             ]);
 
-            // Combine into CSV string
             const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-            
-            // Create download link using a more robust method
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -1173,16 +2319,14 @@
             document.body.appendChild(link);
             link.click();
             
-            // Cleanup
             setTimeout(() => {
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
             }, 100);
             
-            showToast("📊 CSV Exported successfully", "success");
+            showToast("Resolution CSV logs exported successfully", "success");
         } catch (e) {
-            console.error("Export failed:", e);
-            showToast("Failed to export history: " + e.message, "error");
+            showToast("Failed to export: " + e.message, "error");
         }
     }
 
@@ -1190,7 +2334,7 @@
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = 'toast';
-        const colors = { success: 'var(--success)', error: 'var(--danger)', warning: 'var(--warning)', info: 'var(--primary)' };
+        const colors = { success: 'var(--accent-green)', error: 'var(--accent-red)', warning: 'var(--accent-orange)', info: 'var(--accent-blue)' };
         const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-triangle-exclamation', info: 'fa-info-circle' };
         
         toast.style.borderLeftColor = colors[type];
@@ -1204,16 +2348,20 @@
         }, 3000);
     }
 
-    // --- Initiation ---
+    // --- System Initiation ---
     setInterval(fetchStatus, POLL_INTERVAL_STATUS);
     setInterval(fetchAgentFeed, POLL_INTERVAL_FEED);
     setInterval(fetchHistory, 5000);
 
     window.onload = () => {
+        initActiveTab();
         fetchStatus();
         fetchHistory();
-        showToast("🤖 RUNBOOK AGENT Dashboard Connected", "success");
+        showToast("Repository Console Connected", "success");
     };
+
+    // Listen to history hash transitions
+    window.addEventListener('hashchange', initActiveTab);
 
 </script>
 </body>

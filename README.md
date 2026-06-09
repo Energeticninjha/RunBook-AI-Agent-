@@ -48,4 +48,3 @@ python -m uvicorn backend.main:app --reload --port 8000
 Then visit: **http://localhost:8000**
 
 ---
-*Built by Team AI Ops*
