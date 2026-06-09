@@ -952,7 +952,7 @@
 </footer>
 
 <script>
-    const API_BASE = 'http://localhost:8000';
+    const API_BASE = window.location.origin;
     const POLL_INTERVAL_STATUS = 2000;
     const POLL_INTERVAL_FEED = 1000;
     
@@ -1132,15 +1132,18 @@
     }
 
     async function exportHistory() {
+        console.log("Export triggered...");
         if (isOffline) {
             showToast("Cannot export in demo mode", "warning");
             return;
         }
         try {
             const res = await fetch(`${API_BASE}/api/history`);
+            if (!res.ok) throw new Error("Server error");
             const data = await res.json();
+            console.log("History data received:", data);
             
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 showToast("No history to export", "info");
                 return;
             }
@@ -1149,31 +1152,37 @@
             const headers = ["ID", "Time Started", "Failure Type", "Runbook", "Steps Completed", "Total Steps", "Status"];
             const rows = data.map(r => [
                 r.id,
-                new Date(r.started_at).toLocaleString(),
-                r.failure_type.replace('_',' ').toUpperCase(),
-                r.runbook_name,
+                `"${new Date(r.started_at).toLocaleString()}"`,
+                `"${r.failure_type.replace('_',' ').toUpperCase()}"`,
+                `"${r.runbook_name}"`,
                 r.completed_steps,
                 r.total_steps,
-                r.status
+                `"${r.status}"`
             ]);
 
             // Combine into CSV string
             const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
             
-            // Create download link
+            // Create download link using a more robust method
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
+            const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `runbook_history_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
+            link.href = url;
+            link.download = `runbook_history_${new Date().getTime()}.csv`;
+            
             document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
+            
+            // Cleanup
+            setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            }, 100);
             
             showToast("📊 CSV Exported successfully", "success");
         } catch (e) {
-            showToast("Failed to export history", "error");
+            console.error("Export failed:", e);
+            showToast("Failed to export history: " + e.message, "error");
         }
     }
 

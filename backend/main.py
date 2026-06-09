@@ -12,9 +12,19 @@ load_dotenv()
 
 from .agent_runner import OpsAgentRunner
 from . import database as db
+from fastapi.middleware.cors import CORSMiddleware
 
 # Initialize App
 app = FastAPI(title="RUNBOOK AGENT Dashboard")
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Global State
 server_status = {
