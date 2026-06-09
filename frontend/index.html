@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUNBOOK AGENT — Autonomous Runbook Execution Agent</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #05070a;
+            --card-bg: #0d1117;
+            --navbar-bg: rgba(10, 14, 26, 0.95);
+            --primary: #3b82f6;
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #10b981 100%);
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --terminal-bg: #080d1a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- Animations --- */
+        @keyframes pulse-green {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes glow-pulse {
+            0% { border-color: var(--border); box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
+            50% { border-color: var(--primary); box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+            100% { border-color: var(--border); box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        /* --- Navbar --- */
+        nav {
+            position: sticky;
+            top: 0;
+            height: 64px;
+            background: var(--navbar-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo i {
+            -webkit-text-fill-color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            padding: 80px 40px;
+            text-align: center;
+            position: relative;
+            background-image: radial-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .hero::before, .hero::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.15;
+        }
+
+        .hero::before { top: 10%; left: 10%; background: var(--primary); }
+        .hero::after { bottom: 10%; right: 10%; background: var(--secondary); }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.3));
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 32px;
+        }
+
+        .hero-btns {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* --- Stats Row --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            padding: 0 40px 60px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 24px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stat-info h3 {
+            font-size: 1.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 4px;
+        }
+
+        .stat-info p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .stat-trend {
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+
+        /* --- Infrastructure Status --- */
+        .page-section {
+            padding: 0 40px 80px;
+        }
+
+        .section-header {
+            margin-bottom: 32px;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+        }
+
+        .infra-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        .server-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 24px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .server-card.down {
+            border-color: var(--danger);
+            animation: shake 0.5s;
+        }
+
+        .server-card.down .server-status-dot {
+            background: var(--danger);
+            animation: pulse-red 2s infinite;
+        }
+
+        .server-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .server-id {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+        }
+
+        .server-id i {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .server-status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .server-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .server-metric {
+            margin-bottom: 16px;
+        }
+
+        .metric-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        .progress-bg {
+            height: 6px;
+            background: var(--bg);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 1s;
+        }
+
+        /* --- Demo Controls & Feed --- */
+        .action-container {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 32px;
+            padding: 0 40px 80px;
+        }
+
+        .trigger-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .trigger-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+        }
+
+        .trigger-info { flex: 1; }
+        .trigger-info h4 { margin-bottom: 4px; }
+        .trigger-info p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .btn-trigger {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-trigger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-trigger:disabled {
+            border-color: var(--warning);
+            color: var(--warning);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* --- Agent Feed --- */
+        .feed-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .feed-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .feed-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .feed-body {
+            flex: 1;
+            background: var(--terminal-bg);
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            scroll-behavior: smooth;
+        }
+
+        .feed-entry {
+            margin-bottom: 8px;
+            animation: slideInLeft 0.3s ease-out;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 4px;
+        }
+
+        .ts { color: #565f89; margin-right: 8px; }
+        .success-text { color: var(--success); font-weight: bold; }
+        .failure-text { color: var(--danger); font-weight: bold; }
+        .info-text { color: #bb9af7; }
+        .wait-text { color: var(--warning); font-weight: bold; animation: pulse 1s infinite; }
+
+        .confirm-panel {
+            padding: 16px 20px;
+            background: rgba(245, 158, 11, 0.1);
+            border-top: 1px solid var(--warning);
+            display: none;
+        }
+
+        .confirm-panel.active { display: block; }
+
+        .confirm-btns {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        /* --- Stats/Tech/History --- */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .history-table th, .history-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-table th {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-running { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+        .badge-fail { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        /* --- Toasts --- */
+        #toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 10000;
+        }
+
+        .toast {
+            background: var(--card-bg);
+            border-left: 4px solid var(--primary);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-top: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* --- Utilities --- */
+        .mb-10 { margin-bottom: 40px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+
+        footer {
+            padding: 60px 40px;
+            background: #020305;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .offline-banner {
+            background: var(--warning);
+            color: black;
+            text-align: center;
+            padding: 4px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: none;
+        }
+
+        .runbook-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 24px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .runbook-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .runbook-card h4 {
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .runbook-content-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+        }
+
+        .modal-body {
+            background: var(--card-bg);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            border-radius: 12px;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid var(--border);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="offline-banner" class="offline-banner">⚠️ DEMO MODE — Backend not connected. Showing sample data.</div>
+
+<nav>
+    <div class="logo">
+        <i class="fas fa-robot"></i> RUNBOOK AGENT
+    </div>
+    <div class="nav-links">
+        <a href="#dashboard">Dashboard</a>
+        <a href="#runbooks">Runbooks</a>
+        <a href="#history">History</a>
+        <a href="#about">About</a>
+    </div>
+    <div class="nav-right">
+        <div class="status-badge" style="display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+            <div class="status-dot" style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse-green 2s infinite;"></div>
+            Agent Online
+        </div>
+    </div>
+</nav>
+
+<section class="hero">
+    <h1>RUNBOOK AGENT</h1>
+    <p>Autonomous IT Operations Agent powered by Ollama LLaMA3. <br>Resolving complex infrastructure failures in real-time with zero manual effort.</p>
+    <div class="hero-btns">
+        <a href="#dashboard" class="btn btn-primary"><i class="fas fa-rocket"></i> View Live Demo</a>
+        <a href="#runbooks" class="btn btn-outline"><i class="fas fa-clipboard-list"></i> View Runbooks</a>
+    </div>
+</section>
+
+<!-- Stats Row -->
+<div class="stats-grid">
+    <div class="stat-card" style="border-left: 4px solid var(--success);">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+            <i class="fas fa-shield-check"></i>
+        </div>
+        <div class="stat-info">
+            <h3 id="stat-resolved">0</h3>
+            <p>Incidents Resolved</p>
+            <div class="stat-trend success">+0 today</div>
+        </div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid var(--primary);">
+        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--primary);">
+            <i class="fas fa-list-check"></i>
+        </div>
+        <div class="stat-info">
+            <h3 id="stat-steps">0</h3>
+            <p>Steps Executed</p>
+            <div class="stat-trend" style="color: var(--primary);">Real-time tracking</div>
+        </div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid var(--warning);">
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="stat-info">
+            <h3 id="stat-discord">0</h3>
+            <p>Alerts Sent</p>
+            <div class="stat-trend" style="color: var(--warning);">Discord Live</div>
+        </div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid var(--secondary);">
+        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--secondary);">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-info">
+            <h3 id="stat-avg">~4m</h3>
+            <p>Avg Resolution</p>
+            <div class="stat-trend" style="color: var(--secondary);">vs 45 min manual</div>
+        </div>
+    </div>
+</div>
+
+<!-- Infra Status -->
+<section id="dashboard" class="page-section">
+    <div class="section-header">
+        <h2><i class="fas fa-server"></i> Infrastructure Status</h2>
+        <p>Real-time machine health monitoring</p>
+    </div>
+    <div class="infra-grid">
+        <!-- Nginx -->
+        <div class="server-card" id="card-nginx">
+            <div class="server-top">
+                <div class="server-id"><i class="fas fa-globe"></i> Web Server (Nginx)</div>
+                <div class="server-status-badge">
+                    <div class="server-status-dot"></div>
+                    <span id="status-nginx">HEALTHY</span>
+                </div>
+            </div>
+            <div class="server-metric">
+                <div class="metric-label">
+                    <span>Availability</span>
+                    <span id="metric-nginx">99.9%</span>
+                </div>
+                <div class="progress-bg"><div id="progress-nginx" class="progress-bar" style="width: 100%; background: var(--success);"></div></div>
+            </div>
+            <div class="metric-label" style="font-size: 0.7rem;">Last checked: 2s ago</div>
+        </div>
+        <!-- Database -->
+        <div class="server-card" id="card-database">
+            <div class="server-top">
+                <div class="server-id"><i class="fas fa-database"></i> Database Server</div>
+                <div class="server-status-badge">
+                    <div class="server-status-dot"></div>
+                    <span id="status-database">HEALTHY</span>
+                </div>
+            </div>
+            <div class="server-metric">
+                <div class="metric-label">
+                    <span>Connections</span>
+                    <span id="metric-database">42</span>
+                </div>
+                <div class="progress-bg"><div id="progress-database" class="progress-bar" style="width: 42%; background: var(--success);"></div></div>
+            </div>
+            <div class="metric-label" style="font-size: 0.7rem;">Last checked: 2s ago</div>
+        </div>
+        <!-- CPU -->
+        <div class="server-card" id="card-cpu">
+            <div class="server-top">
+                <div class="server-id"><i class="fas fa-microchip"></i> System CPU</div>
+                <div class="server-status-badge">
+                    <div class="server-status-dot"></div>
+                    <span id="status-cpu">NORMAL</span>
+                </div>
+            </div>
+            <div class="server-metric">
+                <div class="metric-label">
+                    <span>Current Load</span>
+                    <span id="metric-cpu">23%</span>
+                </div>
+                <div class="progress-bg"><div id="progress-cpu" class="progress-bar" style="width: 23%; background: var(--success);"></div></div>
+            </div>
+            <div class="metric-label" style="font-size: 0.7rem;">Last checked: 2s ago</div>
+        </div>
+        <!-- Disk -->
+        <div class="server-card" id="card-disk">
+            <div class="server-top">
+                <div class="server-id"><i class="fas fa-hard-drive"></i> Disk Usage</div>
+                <div class="server-status-badge">
+                    <div class="server-status-dot"></div>
+                    <span id="status-disk">NORMAL</span>
+                </div>
+            </div>
+            <div class="server-metric">
+                <div class="metric-label">
+                    <span>Storage Used</span>
+                    <span id="metric-disk">67%</span>
+                </div>
+                <div class="progress-bg"><div id="progress-disk" class="progress-bar" style="width: 67%; background: var(--success);"></div></div>
+            </div>
+            <div class="metric-label" style="font-size: 0.7rem;">Last checked: 2s ago</div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Agent View -->
+<div class="action-container">
+    <!-- Left: Controls -->
+    <div class="trigger-list">
+        <div class="section-header">
+            <h2><i class="fas fa-bolt"></i> Demo Controls</h2>
+            <p>Trigger failures to activate the agent</p>
+        </div>
+        <div class="trigger-card" id="trigger-nginx">
+            <i class="fas fa-globe-africa fa-2x" style="color: var(--danger);"></i>
+            <div class="trigger-info">
+                <h4>Nginx Server Down</h4>
+                <p>Web server stopped responding (CRITICAL)</p>
+            </div>
+            <button class="btn-trigger" onclick="triggerFailure('nginx_down')">🔴 TRIGGER</button>
+        </div>
+        <div class="trigger-card" id="trigger-cpu">
+            <i class="fas fa-fire fa-2x" style="color: #f97316;"></i>
+            <div class="trigger-info">
+                <h4>High CPU Usage</h4>
+                <p>CPU at 94% — performance lag (HIGH)</p>
+            </div>
+            <button class="btn-trigger" onclick="triggerFailure('high_cpu')">🔴 TRIGGER</button>
+        </div>
+        <div class="trigger-card" id="trigger-database">
+            <i class="fas fa-database fa-2x" style="color: var(--danger);"></i>
+            <div class="trigger-info">
+                <h4>Database Failure</h4>
+                <p>PostgreSQL connection refused (CRITICAL)</p>
+            </div>
+            <button class="btn-trigger" onclick="triggerFailure('database_failure')">🔴 TRIGGER</button>
+        </div>
+        <div class="trigger-card" id="trigger-disk">
+            <i class="fas fa-hdd fa-2x" style="color: #f97316;"></i>
+            <div class="trigger-info">
+                <h4>Disk Space Critical</h4>
+                <p>Disk at 91% — space exhausted (HIGH)</p>
+            </div>
+            <button class="btn-trigger" onclick="triggerFailure('disk_full')">🔴 TRIGGER</button>
+        </div>
+    </div>
+
+    <!-- Right: Agent Feed -->
+    <div class="feed-card">
+        <div class="feed-header">
+            <div class="feed-status" id="agent-status-bar">
+                <div class="status-dot" style="background: var(--text-muted); animation: none; width: 8px; height: 8px; border-radius: 50%;"></div>
+                 Agent Idle — Waiting for incidents
+            </div>
+            <i class="fas fa-terminal"></i>
+        </div>
+        <div class="feed-body" id="agent-feed">
+            <div class="feed-entry"><span class="ts">[00:00:00]</span> ⚡ SYSTEM INITIALIZED. MCP TOOLS LOADED.</div>
+            <div class="feed-entry"><span class="ts">[00:00:00]</span> 🤖 RUNBOOK AGENT v1.0.0 Online.</div>
+        </div>
+        <div class="confirm-panel" id="confirm-panel">
+            <div style="font-weight: 700; color: var(--warning);"><i class="fas fa-triangle-exclamation"></i> HUMAN CONFIRMATION REQUIRED</div>
+            <div id="confirm-msg" style="font-size: 0.85rem; margin-top: 5px; color: var(--text-main);"></div>
+            <div class="confirm-btns">
+                <button class="btn btn-primary" style="background: var(--success); font-size: 0.8rem; padding: 6px 16px;" onclick="confirmStep()">✅ Confirm & Execute</button>
+                <button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger); font-size: 0.8rem; padding: 6px 16px;" onclick="skipStep()">❌ Skip</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Runbooks Section -->
+<section id="runbooks" class="page-section">
+    <div class="section-header">
+        <h2><i class="fas fa-clipboard-list"></i> Operational Runbooks</h2>
+        <p>Pre-defined resolution strategies for common failures</p>
+    </div>
+    <div class="infra-grid">
+        <div class="runbook-card" onclick="viewRunbook('nginx_down.md')">
+            <i class="fas fa-globe fa-2x mb-2" style="color: var(--primary);"></i>
+            <h4>Nginx Server Down</h4>
+            <p>6 steps to restore web availability</p>
+        </div>
+        <div class="runbook-card" onclick="viewRunbook('high_cpu.md')">
+            <i class="fas fa-microchip fa-2x mb-2" style="color: var(--secondary);"></i>
+            <h4>High CPU Usage</h4>
+            <p>5 steps to mitigate performance lag</p>
+        </div>
+        <div class="runbook-card" onclick="viewRunbook('database_failure.md')">
+            <i class="fas fa-database fa-2x mb-2" style="color: var(--danger);"></i>
+            <h4>Database Failure</h4>
+            <p>6 steps to restore DB connectivity</p>
+        </div>
+        <div class="runbook-card" onclick="viewRunbook('disk_full.md')">
+            <i class="fas fa-hard-drive fa-2x mb-2" style="color: var(--warning);"></i>
+            <h4>Disk Space Critical</h4>
+            <p>6 steps to free up storage space</p>
+        </div>
+    </div>
+</section>
+
+<!-- Runbook Modal -->
+<div id="runbook-modal" class="runbook-content-modal" onclick="closeModal()">
+    <div class="modal-body" onclick="event.stopPropagation()">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title" style="margin-bottom: 20px; color: var(--primary);"></h2>
+        <pre id="modal-content" style="white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-muted);"></pre>
+    </div>
+</div>
+
+<!-- History Table -->
+<section id="history" class="page-section">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h2><i class="fas fa-history"></i> Execution History</h2>
+            <p>Recent incident resolutions and agent performance</p>
+        </div>
+        <button class="btn btn-outline" style="font-size: 0.8rem;"><i class="fas fa-download"></i> Export CSV</button>
+    </div>
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Time Started</th>
+                <th>Failure Type</th>
+                <th>Runbook</th>
+                <th>Steps</th>
+                <th>Status</th>
+                <th>Discord</th>
+            </tr>
+        </thead>
+        <tbody id="history-body">
+            <!-- Dynamic rows -->
+        </tbody>
+    </table>
+</section>
+
+<!-- Tech Stack -->
+<section id="about" class="page-section">
+    <div class="section-header text-center">
+        <h2>🛠️ Technology Stack</h2>
+        <p>Built for the Modern DevOps Enterprise</p>
+    </div>
+    <div class="infra-grid">
+        <div class="stat-card" style="padding: 15px; border: 1px solid var(--border);">
+            <i class="fab fa-python fa-2x" style="color: #3776ab;"></i>
+            <div><div style="font-weight: 700;">Python 3.11</div><p style="font-size: 0.7rem;">Backend Core</p></div>
+        </div>
+        <div class="stat-card" style="padding: 15px; border: 1px solid var(--border);">
+            <i class="fas fa-bolt fa-2x" style="color: #009688;"></i>
+            <div><div style="font-weight: 700;">FastAPI</div><p style="font-size: 0.7rem;">REST Gateway</p></div>
+        </div>
+        <div class="stat-card" style="padding: 15px; border: 1px solid var(--border);">
+            <i class="fas fa-brain fa-2x" style="color: #facc15;"></i>
+            <div><div style="font-weight: 700;">Ollama Llama3</div><p style="font-size: 0.7rem;">Local Brain</p></div>
+        </div>
+        <div class="stat-card" style="padding: 15px; border: 1px solid var(--border);">
+            <i class="fas fa-code-branch fa-2x" style="color: var(--secondary);"></i>
+            <div><div style="font-weight: 700;">MCP Protocol</div><p style="font-size: 0.7rem;">Execution Layer</p></div>
+        </div>
+    </div>
+</section>
+
+<div id="toast-container"></div>
+
+<footer>
+    <div class="logo" style="justify-content: center; margin-bottom: 0;">
+        <i class="fas fa-robot"></i> RUNBOOK AGENT
+    </div>
+</footer>
+
+<script>
+    const API_BASE = 'http://localhost:8000';
+    const POLL_INTERVAL_STATUS = 2000;
+    const POLL_INTERVAL_FEED = 1000;
+    
+    let lastLogCount = 0;
+    let isOffline = false;
+
+    // --- Core Functions ---
+
+    async function fetchStatus() {
+        try {
+            const res = await fetch(`${API_BASE}/api/status`);
+            const data = await res.json();
+            isOffline = false;
+            document.getElementById('offline-banner').style.display = 'none';
+            updateUIStatus(data);
+        } catch (e) {
+            console.warn("Backend offline");
+            isOffline = true;
+            document.getElementById('offline-banner').style.display = 'block';
+        }
+    }
+
+    function updateUIStatus(data) {
+        // Server Cards
+        updateServerCard('nginx', data.nginx, data.nginx === 'healthy' ? '99.9%' : 'OFFLINE');
+        updateServerCard('database', data.database, data.database === 'healthy' ? '42 conn' : 'REJECTED');
+        updateServerCard('cpu', data.cpu, data.cpu === 'normal' ? '23%' : '94%');
+        updateServerCard('disk', data.disk, data.disk === 'normal' ? '67%' : '91%');
+
+        // Agent Button States
+        const btns = document.querySelectorAll('.btn-trigger');
+        btns.forEach(b => {
+             if (data.agent_busy) b.disabled = true;
+             else b.disabled = false;
+        });
+
+        // Global Agent Status Bar
+        const statusBar = document.getElementById('agent-status-bar');
+        if (data.agent_busy) {
+            statusBar.innerHTML = `<div class="status-dot" style="background: var(--primary); animation: pulse-green 1s infinite;"></div> Agent Active — Resolving Incident...`;
+        } else {
+            statusBar.innerHTML = `<div class="status-dot" style="background: var(--text-muted);"></div> Agent Idle — Waiting for incidents`;
+        }
+    }
+
+    function updateServerCard(id, status, metric) {
+        const card = document.getElementById(`card-${id}`);
+        const statusSpan = document.getElementById(`status-${id}`);
+        const metricSpan = document.getElementById(`metric-${id}`);
+        const progress = document.getElementById(`progress-${id}`);
+
+        if (status === 'down' || status === 'critical') {
+            card.classList.add('down');
+            statusSpan.innerText = status.toUpperCase();
+            metricSpan.innerText = metric;
+            progress.style.width = '100%';
+            progress.style.background = 'var(--danger)';
+        } else {
+            card.classList.remove('down');
+            statusSpan.innerText = 'HEALTHY';
+            metricSpan.innerText = metric;
+            progress.style.background = 'var(--success)';
+            if (id === 'cpu') progress.style.width = '23%';
+            else if (id === 'disk') progress.style.width = '67%';
+            else progress.style.width = '100%';
+        }
+    }
+
+    async function fetchAgentFeed() {
+        if (isOffline) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/agent/feed`);
+            const data = await res.json();
+            
+            if (data.length > lastLogCount) {
+                for (let i = lastLogCount; i < data.length; i++) {
+                    addFeedEntry(data[i]);
+                }
+                lastLogCount = data.length;
+            }
+        } catch (e) {}
+    }
+
+    function addFeedEntry(entry) {
+        const feed = document.getElementById('agent-feed');
+        const div = document.createElement('div');
+        div.className = 'feed-entry';
+        
+        let colorClass = 'info-text';
+        if (entry.status.includes('FAILURE') || entry.status.includes('FAILED')) colorClass = 'failure-text';
+        if (entry.status.includes('RESOLVED') || entry.status.includes('SUCCESS')) colorClass = 'success-text';
+        if (entry.status.includes('CONFIRMATION')) colorClass = 'wait-text';
+
+        div.innerHTML = `<span class="ts">[${entry.timestamp}]</span> <span class="${colorClass}">${entry.status}</span> — ${entry.message}`;
+        feed.appendChild(div);
+        feed.scrollTop = feed.scrollHeight;
+
+        // Handle Confirmation Panel
+        const panel = document.getElementById('confirm-panel');
+        if (entry.needs_confirm) {
+            panel.classList.add('active');
+            document.getElementById('confirm-msg').innerText = `${entry.message}\nRisk: ${entry.risk || "Restarting core service"}`;
+            showToast("⚠️ Intervention Required!", "warning");
+        }
+    }
+
+    async function triggerFailure(type) {
+        showToast("🚨 Triggering incident...", "info");
+        try {
+            await fetch(`${API_BASE}/api/trigger/${type}`, { method: 'POST' });
+            fetchStatus();
+        } catch (e) {
+            showToast("Failed to connect to backend", "error");
+        }
+    }
+
+    async function confirmStep() {
+        document.getElementById('confirm-panel').classList.remove('active');
+        await fetch(`${API_BASE}/api/confirm`, { method: 'POST' });
+        showToast("✅ Confirmed. Agent continuing...", "success");
+    }
+
+    async function skipStep() {
+        document.getElementById('confirm-panel').classList.remove('active');
+        await fetch(`${API_BASE}/api/skip`, { method: 'POST' });
+        showToast("⏭️ Step skipped.", "info");
+    }
+
+    async function viewRunbook(name) {
+        try {
+            const res = await fetch(`${API_BASE}/api/runbooks/${name}`);
+            const data = await res.json();
+            document.getElementById('modal-title').innerText = `Runbook: ${name}`;
+            document.getElementById('modal-content').innerText = data.content;
+            document.getElementById('runbook-modal').style.display = 'flex';
+        } catch (e) {
+            showToast("Failed to fetch runbook", "error");
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('runbook-modal').style.display = 'none';
+    }
+
+    async function fetchHistory() {
+        if (isOffline) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/history`);
+            const data = await res.json();
+            const body = document.getElementById('history-body');
+            body.innerHTML = '';
+            
+            data.forEach((row, i) => {
+                const tr = document.createElement('tr');
+                const statusBadge = row.status === 'completed' ? 'badge-success' : (row.status === 'running' ? 'badge-running' : 'badge-fail');
+                tr.innerHTML = `
+                    <td>#${row.id}</td>
+                    <td>${new Date(row.started_at).toLocaleTimeString()}</td>
+                    <td>${row.failure_type.replace('_',' ').toUpperCase()}</td>
+                    <td>${row.runbook_name}</td>
+                    <td>${row.completed_steps}/${row.total_steps}</td>
+                    <td><span class="badge ${statusBadge}">${row.status}</span></td>
+                    <td><i class="fas fa-bell" style="color: var(--warning);"></i> Sent</td>
+                `;
+                body.appendChild(tr);
+            });
+
+            // Update stats from another endpoint
+            const statRes = await fetch(`${API_BASE}/api/stats`);
+            const stats = await statRes.json();
+            document.getElementById('stat-resolved').innerText = stats.total_runs;
+            document.getElementById('stat-steps').innerText = stats.steps_today;
+            document.getElementById('stat-discord').innerText = stats.discord_sent;
+            document.getElementById('stat-avg').innerText = `~${stats.avg_resolution_mins} min`;
+
+        } catch (e) {}
+    }
+
+    function showToast(message, type) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        const colors = { success: 'var(--success)', error: 'var(--danger)', warning: 'var(--warning)', info: 'var(--primary)' };
+        const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-triangle-exclamation', info: 'fa-info-circle' };
+        
+        toast.style.borderLeftColor = colors[type];
+        toast.innerHTML = `<i class="fas ${icons[type]}" style="color: ${colors[type]}"></i> ${message}`;
+        
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // --- Initiation ---
+    setInterval(fetchStatus, POLL_INTERVAL_STATUS);
+    setInterval(fetchAgentFeed, POLL_INTERVAL_FEED);
+    setInterval(fetchHistory, 5000);
+
+    window.onload = () => {
+        fetchStatus();
+        fetchHistory();
+        showToast("🤖 RUNBOOK AGENT Dashboard Connected", "success");
+    };
+
+</script>
+</body>
+</html>
